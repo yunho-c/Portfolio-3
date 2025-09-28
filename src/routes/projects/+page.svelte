@@ -12,14 +12,14 @@
 
 	export let data: PageData;
 
-	let selectedObject: PageData['objects'][number] | null = null;
+	let selectedProject: PageData['projects'][number] | null = null;
 </script>
 
 <header class="border-b px-4 py-2 lg:px-6">
 	<div class="flex items-center gap-4">
-		<h1 class="text-lg font-semibold">Objects</h1>
+		<h1 class="text-lg font-semibold">Projects</h1>
 		<form class="flex w-full max-w-sm items-center space-x-2">
-			<!-- <Input name="q" placeholder="Search for objects..." /> -->
+			<!-- <Input name="q" placeholder="Search for projects..." /> -->
 			<Button type="submit">Search</Button>
 			<Button variant="secondary" size="icon" class="size-8">
 				<ChevronRightIcon />
@@ -30,18 +30,18 @@
 
 <main class="container mx-auto p-4">
 	<SearchResultsGrid
-		objects={data.objects}
-		on:select={(e) => (selectedObject = e.detail)}
+		projects={data.projects}
+		on:select={(e) => (selectedProject = e.detail)}
 	/>
 </main>
 
-{#if selectedObject}
-	<Dialog open={!!selectedObject} onOpenChange={(open) => !open && (selectedObject = null)}>
+{#if selectedProject}
+	<Dialog open={!!selectedProject} onOpenChange={(open) => !open && (selectedProject = null)}>
 		<DialogContent>
 			<DialogHeader>
-				<DialogTitle>{selectedObject.name}</DialogTitle>
+				<DialogTitle>{selectedProject.name}</DialogTitle>
 			</DialogHeader>
-			<img src={selectedObject.thumbnail} alt={selectedObject.name} class="mx-auto rounded-lg" />
+			<img src={selectedProject.thumbnail} alt={selectedProject.name} class="mx-auto rounded-lg" />
 		</DialogContent>
 	</Dialog>
 {/if}

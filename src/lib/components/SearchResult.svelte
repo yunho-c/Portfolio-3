@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let object: { id: number; name: string; thumbnail: string };
+	export let project: { id: number; name: string; thumbnail: string };
 </script>
 
 <button
@@ -7,8 +7,8 @@
 	class="group relative block overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800"
 >
 	<img
-		src={object.thumbnail}
-		alt={object.name}
+		src={project.thumbnail}
+		alt={project.name}
 		class="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
 	/>
 	<div
@@ -17,6 +17,6 @@
 	<div
 		class="absolute top-0 left-0 p-4"
 	>
-		<h3 class="font-semibold text-white drop-shadow-[0_0_9px_rgba(0,0,0,0.9)]">{object.name}</h3>
+		<h3 class="font-semibold text-white drop-shadow-[0_0_9px_rgba(0,0,0,0.9)]">{project.name}</h3>
 	</div>
 </button>
