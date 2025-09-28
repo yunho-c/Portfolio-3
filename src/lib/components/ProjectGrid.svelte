@@ -2,7 +2,7 @@
 	import ProjectCard from './ProjectCard.svelte';
 	import { createEventDispatcher } from 'svelte';
 
-	export let projects: { id: number; name: string; thumbnail: string }[];
+	export let projects: { id: number; name: string; thumbnail: string; tags?: { name: string; icon: string }[] }[];
 
 	const dispatch = createEventDispatcher();
 </script>

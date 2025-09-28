@@ -7,22 +7,46 @@
 		{
 			id: 1,
 			name: 'E-Commerce Platform',
-			thumbnail: 'https://placehold.co/400x400/9333ea/white?text=E-Commerce'
+			thumbnail: 'https://placehold.co/400x400/9333ea/white?text=E-Commerce',
+			tags: [
+				{ name: 'React', icon: 'logos:react' },
+				{ name: 'Node.js', icon: 'logos:nodejs-icon' },
+				{ name: 'MongoDB', icon: 'logos:mongodb-icon' },
+				{ name: 'Stripe', icon: 'logos:stripe' }
+			]
 		},
 		{
 			id: 2,
 			name: 'Task Management App',
-			thumbnail: 'https://placehold.co/400x400/f59e0b/white?text=Tasks'
+			thumbnail: 'https://placehold.co/400x400/f59e0b/white?text=Tasks',
+			tags: [
+				{ name: 'Vue.js', icon: 'logos:vue' },
+				{ name: 'TypeScript', icon: 'logos:typescript-icon' },
+				{ name: 'Supabase', icon: 'logos:supabase-icon' },
+				{ name: 'Tailwind', icon: 'logos:tailwindcss-icon' }
+			]
 		},
 		{
 			id: 3,
 			name: 'Weather Dashboard',
-			thumbnail: 'https://placehold.co/400x400/10b981/white?text=Weather'
+			thumbnail: 'https://placehold.co/400x400/10b981/white?text=Weather',
+			tags: [
+				{ name: 'Svelte', icon: 'logos:svelte-icon' },
+				{ name: 'JavaScript', icon: 'logos:javascript' },
+				{ name: 'Chart.js', icon: 'logos:chartjs' },
+				{ name: 'OpenWeather', icon: 'mdi:weather-cloudy' }
+			]
 		},
 		{
 			id: 4,
 			name: 'Chat Application',
-			thumbnail: 'https://placehold.co/400x400/ef4444/white?text=Chat'
+			thumbnail: 'https://placehold.co/400x400/ef4444/white?text=Chat',
+			tags: [
+				{ name: 'Next.js', icon: 'logos:nextjs-icon' },
+				{ name: 'Socket.io', icon: 'logos:socket-io' },
+				{ name: 'Redis', icon: 'logos:redis' },
+				{ name: 'PostgreSQL', icon: 'logos:postgresql' }
+			]
 		}
 	];
 </script>
