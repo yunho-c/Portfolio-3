@@ -4,12 +4,12 @@
 
 <button
 	on:click
-	class="group relative block overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800"
+	class="group relative block overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
 >
 	<img
 		src={project.thumbnail}
 		alt={project.name}
-		class="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+		class="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110"
 	/>
 	<div
 		class="bg-opacity-50 absolute inset-0 bg-black opacity-0 transition-opacity duration-300 group-hover:opacity-100"
