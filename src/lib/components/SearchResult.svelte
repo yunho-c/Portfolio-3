@@ -15,8 +15,8 @@
 		class="bg-opacity-50 absolute inset-0 bg-black opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 	></div>
 	<div
-		class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent p-4 text-white"
+		class="absolute top-0 left-0 p-4"
 	>
-		<h3 class="font-semibold">{object.name}</h3>
+		<h3 class="font-semibold text-white drop-shadow-[0_0_9px_rgba(0,0,0,0.9)]">{object.name}</h3>
 	</div>
 </button>
