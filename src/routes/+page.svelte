@@ -28,8 +28,10 @@
 
 <div class="hero flex h-96 items-center justify-center">
 	<div class="text-center">
-		<h1 class="text-5xl font-bold">Yunho Cho</h1>
-		<p class="py-6">
+		<h1 class="text-6xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent mb-4">
+			Yunho Cho
+		</h1>
+		<p class="text-xl text-gray-600 dark:text-gray-300">
 			Master's in Robotics at Georgia Tech
 		</p>
 	</div>
