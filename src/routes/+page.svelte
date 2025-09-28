@@ -42,7 +42,7 @@
 	</div>
 </div>
 
-<div class="container mx-auto p-4">
+<div class="container mx-auto p-4 mt-8">
 	<h3 class="text-xl font-semibold mb-6">Featured Projects</h3>
 	<ProjectGrid {projects} on:select={(e) => console.log('Selected project:', e.detail)} />
 </div>
