@@ -27,15 +27,16 @@
 	];
 </script>
 
-<div class="hero flex h-96 items-center justify-center bg-cover bg-center bg-no-repeat" style="background-image: url('/images/mpcnc_lowrider2_part_collage.jpg')">
-	<div class="text-left w-full max-w-4xl mx-auto px-8">
+<div class="hero flex h-96 items-center justify-center bg-cover bg-center bg-no-repeat relative" style="background-image: url('/images/mpcnc_lowrider2_part_collage.jpg')">
+	<div class="absolute inset-0 backdrop-blur-[2px]"></div>
+	<div class="text-left w-full max-w-4xl mx-auto px-0 relative z-10">
 		<h1 class="text-6xl font-bold text-white opacity-90 mb-4 drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">
 			Yunho Cho
 		</h1>
 		<p class="text-xl text-white opacity-90 mb-6 drop-shadow-[0_0_8px_rgba(0,0,0,0.7)]">
-			Master's in Robotics at Georgia Tech
+			M.S. Robotics at Georgia Tech
 		</p>
-		<Button variant="ghost" class="text-white hover:bg-white hover:text-black">
+		<Button variant="link" class="text-white">
 			Resume
 		</Button>
 	</div>
