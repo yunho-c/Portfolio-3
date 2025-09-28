@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import SearchResultsGrid from '$lib/components/SearchResultsGrid.svelte';
+	import ProjectGrid from '$lib/components/ProjectGrid.svelte';
 	import type { PageData } from './$types';
 	import {
 		Dialog,
@@ -29,7 +29,7 @@
 </header>
 
 <main class="container mx-auto p-4">
-	<SearchResultsGrid
+	<ProjectGrid
 		projects={data.projects}
 		on:select={(e) => (selectedProject = e.detail)}
 	/>
