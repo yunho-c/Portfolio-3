@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ProjectGrid from '$lib/components/ProjectGrid.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	// Sample projects data
 	const projects = [
@@ -26,14 +27,17 @@
 	];
 </script>
 
-<div class="hero flex h-96 items-center justify-center">
-	<div class="text-center">
-		<h1 class="text-6xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent mb-4">
+<div class="hero flex h-96 items-center justify-center bg-cover bg-center bg-no-repeat" style="background-image: url('/images/mpcnc_lowrider2_part_collage.jpg')">
+	<div class="text-left w-full max-w-4xl mx-auto px-8">
+		<h1 class="text-6xl font-bold text-white opacity-90 mb-4 drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">
 			Yunho Cho
 		</h1>
-		<p class="text-xl text-gray-600 dark:text-gray-300">
+		<p class="text-xl text-white opacity-90 mb-6 drop-shadow-[0_0_8px_rgba(0,0,0,0.7)]">
 			Master's in Robotics at Georgia Tech
 		</p>
+		<Button variant="ghost" class="text-white hover:bg-white hover:text-black">
+			Resume
+		</Button>
 	</div>
 </div>
 
