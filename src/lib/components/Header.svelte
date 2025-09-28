@@ -9,10 +9,10 @@
 	<nav class="mx-auto flex gap-4 sm:gap-6">
 		<Button variant="ghost" href="/about" class="text-sm font-medium">About</Button>
 		<Button variant="ghost" href="/projects" class="text-sm font-medium">Projects</Button>
-		<Button variant="ghost" href="/coursework" class="text-sm font-medium">Coursework</Button>
 		<Button variant="ghost" href="https://research.yunhocho.com" class="text-sm font-medium"
 			>Research</Button
 		>
+		<!-- <Button variant="ghost" href="/coursework" class="text-sm font-medium">Coursework</Button> -->
 		<!-- <Button variant="ghost" href="https://blog.yunhocho.com" class="text-sm font-medium"
 			>Blog</Button
 		> -->
