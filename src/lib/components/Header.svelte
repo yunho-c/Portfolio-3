@@ -2,32 +2,24 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 </script>
 
-<header
-	class="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 lg:h-14 lg:flex-nowrap lg:px-6 lg:py-0"
->
-	<a class="flex items-center justify-center" href="/">
-		<span class="font-semibold">Yunho Cho</span>
-	</a>
-	<nav
-		class="order-3 flex w-full gap-1 overflow-x-auto sm:order-none sm:mx-auto sm:w-auto sm:gap-2 lg:gap-4"
-	>
+<header class="flex flex-wrap items-center px-4 py-3 lg:h-14 lg:flex-nowrap lg:px-6 lg:py-0">
+	<!-- Left Side -->
+	<div class="flex items-center sm:flex-1 justify-start">
+		<a class="flex items-center justify-center" href="/">
+			<span class="font-semibold">Yunho Cho</span>
+		</a>
+	</div>
+
+	<!-- Center Navigation -->
+	<nav class="order-3 mt-3 flex w-full justify-start gap-1 overflow-x-auto sm:order-none sm:mt-0 sm:w-auto sm:justify-center sm:gap-2 lg:gap-4">
 		<Button variant="ghost" size="sm" href="/about" class="text-sm font-medium">About</Button>
-		<Button variant="ghost" size="sm" href="/experience" class="text-sm font-medium"
-			>Experience</Button
-		>
+		<Button variant="ghost" size="sm" href="/experience" class="text-sm font-medium">Experience</Button>
 		<Button variant="ghost" size="sm" href="/projects" class="text-sm font-medium">Projects</Button>
-		<Button
-			variant="ghost"
-			size="sm"
-			href="https://research.yunhocho.com"
-			class="text-sm font-medium">Research</Button
-		>
-		<!-- <Button variant="ghost" href="/coursework" class="text-sm font-medium">Coursework</Button> -->
-		<!-- <Button variant="ghost" href="https://blog.yunhocho.com" class="text-sm font-medium"
-			>Blog</Button
-		> -->
+		<Button variant="ghost" size="sm" href="https://research.yunhocho.com" class="text-sm font-medium">Research</Button>
 	</nav>
-	<nav class="ml-auto flex gap-2 sm:gap-4 lg:gap-6">
+
+	<!-- Right Side -->
+	<nav class="ml-auto flex items-center justify-end gap-2 sm:flex-1 sm:gap-4 lg:gap-6">
 		<Button
 			variant="link"
 			href="https://scholar.google.com/citations?user=zY_1e-AAAAAJ"
