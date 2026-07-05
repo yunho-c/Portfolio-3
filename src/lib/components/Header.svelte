@@ -22,7 +22,7 @@
 	<nav class="ml-auto flex items-center justify-end gap-2 sm:flex-1 sm:gap-4 lg:gap-6">
 		<Button
 			variant="link"
-			href="https://scholar.google.com/citations?user=zY_1e-AAAAAJ"
+			href="https://scholar.google.com/citations?user=NiU6Rt8AAAAJ"
 			class="text-sm font-medium text-gray-600 transition-all hover:text-blue-500 hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.1)] dark:text-gray-400 dark:hover:text-blue-400 dark:hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]"
 			>Google Scholar</Button
 		>
