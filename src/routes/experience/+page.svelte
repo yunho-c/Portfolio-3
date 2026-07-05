@@ -73,6 +73,9 @@
 
 <main class="bg-background min-h-screen">
 	<article class="mx-auto max-w-[840px] px-5 py-16 sm:px-6 sm:py-24">
+		<header class="mb-16 md:mb-20 text-center">
+			<h1 class="text-4xl font-bold tracking-tight sm:text-5xl text-foreground">Experience</h1>
+		</header>
 		<div class="space-y-20">
 			{#each experiences as experience}
 				<section class="flex flex-col md:flex-row gap-6 md:gap-10">
@@ -87,7 +90,7 @@
 
 					<!-- Right Column: Bullets -->
 					<div class="flex-1 mt-1 md:mt-0">
-						<ul class="ml-4 list-outside list-disc space-y-2 text-[15px] leading-relaxed text-foreground marker:text-muted-foreground">
+						<ul class="ml-4 list-outside list-disc space-y-2 text-[15px] leading-[1.4] text-foreground marker:text-muted-foreground">
 							{#each experience.bullets as bullet}
 								<li class="pl-1">{bullet}</li>
 							{/each}
