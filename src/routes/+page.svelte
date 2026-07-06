@@ -1,6 +1,5 @@
 <script lang="ts">
 	import ProjectGrid from '$lib/components/ProjectGrid.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
 
 	// Sample projects data
 	const projects = [
@@ -51,20 +50,28 @@
 	];
 </script>
 
-<div class="hero flex h-96 items-center justify-center bg-cover bg-center bg-no-repeat relative" style="background-image: url('/images/mpcnc_lowrider2_part_collage.jpg')">
-	<div class="absolute inset-0 backdrop-blur-[2px]"></div>
-	<div class="text-left w-full max-w-4xl mx-auto px-0 relative z-10">
-		<h1 class="text-6xl font-bold text-white opacity-90 mb-4 drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">
-			Yunho Cho
-		</h1>
-		<p class="text-xl text-white opacity-90 mb-6 drop-shadow-[0_0_8px_rgba(0,0,0,0.7)]">
-			M.S. Robotics at Georgia Tech
-		</p>
-		<Button variant="link" class="text-white">
-			Resume
-		</Button>
-	</div>
-</div>
+<main class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32">
+	<!-- Primary Anchor (Huge, Bold) -->
+	<h1 class="text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl">
+		Hi, nice to meet you, my name is Yunho 
+		<span class="font-normal italic text-muted-foreground">('you-know')</span>.
+	</h1>
+	
+	<!-- Secondary Thesis (Large, Muted with Highlighted Keywords) -->
+	<p class="mt-8 text-2xl font-medium leading-snug text-muted-foreground sm:text-3xl">
+		I am a machine learning engineer interested in foundational 
+		<span class="text-foreground">language</span>, 
+		<span class="text-foreground">vision</span>, and 
+		<span class="text-foreground">human-computer interaction</span> technologies.
+	</p>
+
+	<!-- Tertiary Context (Smaller, Playful) -->
+	<p class="mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl">
+		I am generally interested about everything and quite 
+		<span class="cursor-help transition-all duration-300 hover:blur-[3px] text-foreground">distracted</span>, 
+		which naturally leads me to work on many side projects... some of which you can check out below :)
+	</p>
+</main>
 
 <div class="container mx-auto p-4 mt-8">
 	<h3 class="text-xl font-semibold mb-6">Featured Projects</h3>
