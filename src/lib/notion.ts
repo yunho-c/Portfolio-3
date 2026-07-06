@@ -67,7 +67,7 @@ export async function getProjects(): Promise<Project[]> {
 				name,
 				featured: page.properties.Featured?.checkbox || false,
 				thumbnail: page.properties.Thumbnail?.url || placeholder,
-				tags: (page.properties.Category?.multi_select || []).map((tag: any) => ({
+				tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({
 					name: tag.name,
 					icon: ICON_MAP[tag.name] || ''
 				}))
@@ -107,7 +107,7 @@ export async function getProjectBySlug(slug: string): Promise<{ project: Project
 		name,
 		featured: page.properties.Featured?.checkbox || false,
 		thumbnail: page.properties.Thumbnail?.url || placeholder,
-		tags: (page.properties.Category?.multi_select || []).map((tag: any) => ({ 
+		tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({ 
 			name: tag.name, 
 			icon: ICON_MAP[tag.name] || '' 
 		}))
