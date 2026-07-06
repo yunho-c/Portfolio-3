@@ -2,24 +2,36 @@
 	import Icon from '@iconify/svelte';
 
 	export let project: {
-		id: number;
+		id: string;
+		slug: string;
 		name: string;
 		thumbnail: string;
 		tags?: { name: string; icon: string }[]
 	};
 </script>
 
-<button
-	on:click
-	class="group relative block overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
+<a
+	href="/projects/{project.slug}"
+	class="group relative block overflow-hidden rounded-lg border border-border transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-xl"
 >
-	<img
-		src={project.thumbnail}
-		alt={project.name}
-		class="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110"
-	/>
+	{#if project.thumbnail.match(/\.(mp4|webm|ogg|mov)$/i)}
+		<video
+			src={project.thumbnail}
+			autoplay
+			loop
+			muted
+			playsinline
+			class="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110"
+		></video>
+	{:else}
+		<img
+			src={project.thumbnail}
+			alt={project.name}
+			class="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110"
+		/>
+	{/if}
 	<div
-		class="bg-opacity-50 absolute inset-0 bg-black opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+		class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 	></div>
 	<div
 		class="absolute top-0 left-0 p-4"
@@ -34,13 +46,15 @@
 			<div class="flex flex-wrap gap-2">
 				{#each project.tags as tag}
 					<div
-						class="flex items-center gap-1 rounded-full bg-black bg-opacity-70 px-2 py-1 text-xs text-white backdrop-blur-sm"
+						class="flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm"
 					>
-						<Icon icon={tag.icon} width="14" height="14" />
+						{#if tag.icon}
+							<Icon icon={tag.icon} width="14" height="14" />
+						{/if}
 						<span>{tag.name}</span>
 					</div>
 				{/each}
 			</div>
 		</div>
 	{/if}
-</button>
+</a>

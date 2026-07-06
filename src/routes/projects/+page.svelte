@@ -1,47 +1,21 @@
 <script lang="ts">
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import ProjectGrid from '$lib/components/ProjectGrid.svelte';
 	import type { PageData } from './$types';
-	import {
-		Dialog,
-		DialogContent,
-		DialogHeader,
-		DialogTitle
-	} from '$lib/components/ui/dialog/index.js';
 
 	export let data: PageData;
-
-	let selectedProject: PageData['projects'][number] | null = null;
 </script>
 
-<header class="border-b px-4 py-2 lg:px-6">
-	<div class="flex items-center gap-4">
-		<h1 class="text-lg font-semibold">Projects</h1>
-		<form class="flex w-full max-w-sm items-center space-x-2">
-			<!-- <Input name="q" placeholder="Search for projects..." /> -->
-			<Button type="submit">Search</Button>
-			<Button variant="secondary" size="icon" class="size-8">
-				<ChevronRightIcon />
-			</Button>
-		</form>
-	</div>
-</header>
+<svelte:head>
+	<title>Projects - Yunho Cho</title>
+</svelte:head>
 
-<main class="container mx-auto p-4">
-	<ProjectGrid
-		projects={data.projects}
-		on:select={(e) => (selectedProject = e.detail)}
-	/>
+<main class="min-h-screen bg-background">
+	<article class="mx-auto max-w-[1024px] px-5 py-16 sm:px-6 sm:py-24">
+		<header class="mb-16 text-center md:mb-20">
+			<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Projects</h1>
+			<p class="mt-4 text-lg text-muted-foreground">Some side projects and explorations.</p>
+		</header>
+		
+		<ProjectGrid projects={data.projects} />
+	</article>
 </main>
-
-{#if selectedProject}
-	<Dialog open={!!selectedProject} onOpenChange={(open) => !open && (selectedProject = null)}>
-		<DialogContent>
-			<DialogHeader>
-				<DialogTitle>{selectedProject.name}</DialogTitle>
-			</DialogHeader>
-			<img src={selectedProject.thumbnail} alt={selectedProject.name} class="mx-auto rounded-lg" />
-		</DialogContent>
-	</Dialog>
-{/if}
