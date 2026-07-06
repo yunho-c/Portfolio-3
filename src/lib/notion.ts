@@ -26,7 +26,11 @@ const ICON_MAP: Record<string, string> = {
 	'GCP': 'logos:google-cloud',
 	'Tailwind': 'logos:tailwindcss-icon',
 	'Stripe': 'logos:stripe',
-	'Supabase': 'logos:supabase-icon'
+	'Supabase': 'logos:supabase-icon',
+	'Unity': 'logos:unity',
+	'WebRTC': 'logos:webrtc',
+	'Flutter': 'logos:flutter',
+	'Rust': 'logos:rust'
 };
 
 const THUMBNAIL_COLORS = ['9333ea', 'f59e0b', '10b981', 'ef4444', '3b82f6'];

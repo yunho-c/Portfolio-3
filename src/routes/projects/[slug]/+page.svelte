@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { marked } from 'marked';
+	import Icon from '@iconify/svelte';
 	
 	export let data: PageData;
 	$: ({ project, content } = data);
@@ -23,9 +24,12 @@
 			{#if project.tags && project.tags.length > 0}
 				<div class="mt-6 flex flex-wrap gap-2">
 					{#each project.tags as tag}
-						<span class="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-							{tag.name}
-						</span>
+						<div class="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground border border-border/50 shadow-sm">
+							{#if tag.icon}
+								<Icon icon={tag.icon} width="14" height="14" />
+							{/if}
+							<span>{tag.name}</span>
+						</div>
 					{/each}
 				</div>
 			{/if}
