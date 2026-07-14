@@ -49,7 +49,7 @@
 	</main>
 </InteractiveHero>
 
-<div class="container mx-auto px-4 pb-20 sm:px-6 lg:px-8">
+<div class="container mx-auto px-4 pt-8 pb-20 sm:px-6 sm:pt-10 lg:px-8">
 	<div class="intro-line mb-8 flex items-center justify-between" style="--intro-delay: 9460ms">
 		<h3 class="text-2xl font-bold tracking-tight text-foreground">Featured Projects</h3>
 		<a href="/projects" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
@@ -71,7 +71,8 @@
 	.intro-panel::before {
 		position: absolute;
 		z-index: -1;
-		inset: -1.75rem -1.25rem;
+		inset-block: -1.75rem;
+		inset-inline: calc(-1 * clamp(1.25rem, 4vw, 1.75rem));
 		content: '';
 		pointer-events: none;
 		opacity: 0;
@@ -171,7 +172,8 @@
 
 	@media (min-width: 40rem) {
 		.intro-panel::before {
-			inset: -2.5rem;
+			inset-block: -2.5rem;
+			inset-inline: -3rem;
 		}
 	}
 
