@@ -31,8 +31,6 @@ export interface HeroGridOptions {
 	overrides?: HeroGridCellOverrides;
 }
 
-const ROW_POSITIONS = ['18%', '31%', '43%', '57%', '70%', '83%'];
-
 /**
  * Define one-off content or behavior with a `row:column` key (both are zero-based).
  * Every field in HeroGridCell can be overridden independently, including `image`,
@@ -60,7 +58,6 @@ export function createHeroGridCells(
 
 	return Array.from({ length: HERO_GRID_ROWS }, (_, row) =>
 		Array.from({ length: HERO_GRID_COLUMNS }, (_, column) => {
-			const horizontalPosition = 18 + (column / (HERO_GRID_COLUMNS - 1)) * 64;
 			const id = `${row}:${column}` as const;
 			const baseCell: HeroGridCell = {
 				id,
@@ -69,7 +66,7 @@ export function createHeroGridCells(
 				label: `Hero cell ${row + 1}, ${column + 1}`,
 				image: availableImages[column % availableImages.length],
 				backgroundColor: 'transparent',
-				position: `${horizontalPosition}% ${ROW_POSITIONS[row]}`,
+				position: 'center center',
 				size: 'cover',
 				opacity: 1,
 				filter: `grayscale(${6 + row * 4}%) saturate(${1 - row * 0.02}) contrast(1.03)`,
