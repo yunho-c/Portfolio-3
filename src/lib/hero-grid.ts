@@ -31,7 +31,6 @@ export interface HeroGridOptions {
 	overrides?: HeroGridCellOverrides;
 }
 
-const FALLBACK_IMAGES = ['/images/mpcnc_lowrider2_part_collage.jpg'];
 const ROW_POSITIONS = ['18%', '31%', '43%', '57%', '70%', '83%'];
 
 /**
@@ -43,12 +42,6 @@ export const heroGridCellOverrides: HeroGridCellOverrides = {
 	'0:0': {
 		position: '18% 18%',
 		transitionMs: 600
-	},
-	'2:5': {
-		image: '/images/mpcnc_lowrider2_part_collage.jpg',
-		position: '54% 48%',
-		opacity: 0.28,
-		filter: 'grayscale(18%) saturate(0.82) contrast(0.96)'
 	},
 	'5:11': {
 		position: '82% 83%',
@@ -62,7 +55,8 @@ export function createHeroGridCells(
 	{ cellImages = {}, overrides = heroGridCellOverrides }: HeroGridOptions = {}
 ): HeroGridCell[][] {
 	const imagePool = images.filter(Boolean);
-	const availableImages = imagePool.length > 0 ? imagePool : FALLBACK_IMAGES;
+	const collageImagePool = Object.values(cellImages).filter((image): image is string => Boolean(image));
+	const availableImages = imagePool.length > 0 ? imagePool : collageImagePool.length > 0 ? collageImagePool : [''];
 
 	return Array.from({ length: HERO_GRID_ROWS }, (_, row) =>
 		Array.from({ length: HERO_GRID_COLUMNS }, (_, column) => {
@@ -77,8 +71,8 @@ export function createHeroGridCells(
 				backgroundColor: 'transparent',
 				position: `${horizontalPosition}% ${ROW_POSITIONS[row]}`,
 				size: 'cover',
-				opacity: 0.22 + row * 0.008,
-				filter: `grayscale(${20 + row * 6}%) saturate(${0.86 - row * 0.035}) contrast(0.96)`,
+				opacity: 1,
+				filter: `grayscale(${6 + row * 4}%) saturate(${1 - row * 0.02}) contrast(1.03)`,
 				scale: 1.025 + row * 0.006,
 				blendMode: 'normal',
 				dwellMs: 125,

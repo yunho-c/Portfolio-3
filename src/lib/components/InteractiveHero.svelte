@@ -164,7 +164,6 @@
 			style:mix-blend-mode={layerB?.blendMode ?? 'normal'}
 		></div>
 
-		<div class="background-wash"></div>
 		<div class:visible={gridVisible} class="grid-lines"></div>
 
 		{#if activeCell && gridVisible}
@@ -210,17 +209,6 @@
 
 	.background-layer.active {
 		opacity: var(--hero-image-opacity);
-	}
-
-	.background-wash {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			90deg,
-			color-mix(in oklch, var(--background) 74%, transparent) 0%,
-			color-mix(in oklch, var(--background) 58%, transparent) 52%,
-			color-mix(in oklch, var(--background) 76%, transparent) 100%
-		);
 	}
 
 	.grid-lines {
