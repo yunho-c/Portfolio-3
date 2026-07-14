@@ -21,9 +21,9 @@
 		style="--intro-delay: 2460ms"
 	>
 		I am a machine learning engineer interested in foundational
-		<span class="mystic-highlight text-foreground" style="--glint-delay: 3500ms">language</span>,
-		<span class="mystic-highlight text-foreground" style="--glint-delay: 4100ms">vision</span>, and
-		<span class="mystic-highlight text-foreground" style="--glint-delay: 4700ms"
+		<span class="mystic-highlight text-foreground" style="--glint-delay: 4500ms">language</span>,
+		<span class="mystic-highlight text-foreground" style="--glint-delay: 5100ms">vision</span>, and
+		<span class="mystic-highlight text-foreground" style="--glint-delay: 5700ms"
 			>human-computer interaction</span
 		>
 		technologies.
@@ -32,7 +32,7 @@
 	<!-- Tertiary Context (Smaller, Playful) -->
 	<p
 		class="intro-line mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl"
-		style="--intro-delay: 6460ms"
+		style="--intro-delay: 7460ms"
 	>
 		I am generally interested about everything and quite
 		<span class="cursor-help text-foreground transition-all duration-300 hover:blur-[3px]">distracted</span>,
@@ -41,13 +41,13 @@
 </main>
 
 <div class="container mx-auto px-4 pb-20 sm:px-6 lg:px-8">
-	<div class="mb-8 flex items-center justify-between">
+	<div class="intro-line mb-8 flex items-center justify-between" style="--intro-delay: 9460ms">
 		<h3 class="text-2xl font-bold tracking-tight text-foreground">Featured Projects</h3>
 		<a href="/projects" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
 			View all projects &rarr;
 		</a>
 	</div>
-	<ProjectGrid projects={data.projects.slice(0, 4)} />
+	<ProjectGrid projects={data.projects.slice(0, 4)} reveal revealDelay={9960} revealInterval={220} />
 </div>
 
 <style>
