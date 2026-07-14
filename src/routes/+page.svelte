@@ -7,29 +7,47 @@
 	export let data: PageData;
 
 	const heroGridCells = createHeroGridCells(data.heroImages, { cellImages: data.heroCollageImages });
+	const greetingWords = [
+		{ text: 'Hi,', delay: 0 },
+		{ text: 'nice', delay: 800 },
+		{ text: 'to', delay: 920 },
+		{ text: 'meet', delay: 1040 },
+		{ text: 'you,', delay: 1160 },
+		{ text: 'my', delay: 1960 },
+		{ text: 'name', delay: 2080 },
+		{ text: 'is', delay: 2200 },
+		{ text: 'Yunho', delay: 2320 }
+	];
 </script>
 
-<InteractiveHero cells={heroGridCells} activationDelay={8360}>
+<InteractiveHero cells={heroGridCells} activationDelay={10640}>
 	<main class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32">
 		<div class="intro-panel">
 			<!-- Primary Anchor (Huge, Bold) -->
 			<h1
-				class="intro-line text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl"
+				class="text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl"
 				style="--intro-delay: 460ms"
+				aria-label="Hi, nice to meet you, my name is Yunho ('you-know')."
 			>
-				Hi, nice to meet you, my name is Yunho
-				<span class="pronunciation font-normal italic text-muted-foreground">('you-know')</span>.
+				{#each greetingWords as word, index}
+					{#if index > 0}{' '}{/if}<span
+						class="written-word"
+						style={`--word-delay: ${word.delay}ms`}>{word.text}</span
+					>
+				{/each}{' '}<span class="written-word" style="--word-delay: 3120ms"
+					><span class="font-normal italic text-muted-foreground">('you-know')</span>.</span
+				>
 			</h1>
 
 			<!-- Secondary Thesis (Large, Muted with Highlighted Keywords) -->
 			<p
 				class="intro-line mt-8 text-2xl font-medium leading-snug text-muted-foreground sm:text-3xl"
-				style="--intro-delay: 2460ms"
+				style="--intro-delay: 4740ms"
 			>
 				I am a machine learning engineer interested in foundational
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 4500ms">language</span>,
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 5100ms">vision</span>, and
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 5700ms"
+				<span class="mystic-highlight text-foreground" style="--glint-delay: 6780ms">language</span>,
+				<span class="mystic-highlight text-foreground" style="--glint-delay: 7380ms">vision</span>, and
+				<span class="mystic-highlight text-foreground" style="--glint-delay: 7980ms"
 					>human-computer interaction</span
 				>
 				technologies.
@@ -38,7 +56,7 @@
 			<!-- Tertiary Context (Smaller, Playful) -->
 			<p
 				class="intro-line mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl"
-				style="--intro-delay: 7460ms"
+				style="--intro-delay: 9740ms"
 			>
 				I am generally interested about everything and quite
 				<span class="cursor-help text-foreground transition-all duration-300 hover:blur-[3px]"
@@ -50,13 +68,13 @@
 </InteractiveHero>
 
 <div class="container mx-auto px-4 pt-8 pb-20 sm:px-6 sm:pt-10 lg:px-8">
-	<div class="intro-line mb-8 flex items-center justify-between" style="--intro-delay: 9460ms">
+	<div class="intro-line mb-8 flex items-center justify-between" style="--intro-delay: 11740ms">
 		<h3 class="text-2xl font-bold tracking-tight text-foreground">Featured Projects</h3>
 		<a href="/projects" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
 			View all projects &rarr;
 		</a>
 	</div>
-	<ProjectGrid projects={data.projects.slice(0, 4)} reveal revealDelay={9960} revealInterval={220} />
+	<ProjectGrid projects={data.projects.slice(0, 4)} reveal revealDelay={12240} revealInterval={220} />
 </div>
 
 <style>
@@ -111,9 +129,8 @@
 		animation-delay: var(--intro-delay);
 	}
 
-	.pronunciation {
-		animation: secret-note-reveal 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
-		animation-delay: 840ms;
+	.written-word {
+		display: inline-block;
 	}
 
 	.mystic-highlight {
@@ -143,17 +160,29 @@
 		}
 	}
 
-	@keyframes secret-note-reveal {
-		from {
+	@keyframes word-inscribe {
+		0% {
 			opacity: 0;
-			filter: blur(0.25rem);
-			letter-spacing: 0.04em;
+			clip-path: inset(0 100% 0 0);
+			filter: blur(0.3rem);
+			transform: translateY(0.14em) scale(0.985);
+			text-shadow: 0 0 1rem oklch(0.78 0.14 82 / 0%);
 		}
 
-		to {
+		42% {
+			opacity: 0.92;
+			clip-path: inset(0 8% 0 0);
+			filter: blur(0.1rem);
+			transform: translateY(0.035em) scale(0.997);
+			text-shadow: 0 0 0.8rem oklch(0.78 0.14 82 / 32%);
+		}
+
+		100% {
 			opacity: 1;
+			clip-path: inset(0);
 			filter: blur(0);
-			letter-spacing: normal;
+			transform: translateY(0) scale(1);
+			text-shadow: 0 0 0 transparent;
 		}
 	}
 
@@ -177,6 +206,15 @@
 		}
 	}
 
+	@media (prefers-reduced-motion: no-preference) {
+		.written-word {
+			animation: word-inscribe 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+			animation-delay: calc(var(--intro-delay) + var(--word-delay));
+			transform-origin: left center;
+			will-change: opacity, clip-path, filter, transform;
+		}
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.intro-panel,
 		.intro-panel::before {
@@ -184,7 +222,6 @@
 		}
 
 		.intro-line,
-		.pronunciation,
 		.mystic-highlight {
 			animation: none;
 		}
