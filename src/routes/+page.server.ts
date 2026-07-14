@@ -6,5 +6,6 @@ export const prerender = true;
 export const load: PageServerLoad = async () => {
 	const allProjects = await getProjects();
 	const projects = allProjects.filter((p) => p.featured);
-	return { projects };
+	const heroImages = allProjects.map((project) => project.thumbnail).filter(Boolean);
+	return { projects, heroImages };
 };
