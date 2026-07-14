@@ -17,13 +17,18 @@
 	let layerA = $state<HeroGridCell | null>(null);
 	let layerB = $state<HeroGridCell | null>(null);
 	let activeLayer = $state<-1 | 0 | 1>(-1);
+	let outgoingLayer = $state<-1 | 0 | 1>(-1);
+	let incomingLayer = $state<-1 | 0 | 1>(-1);
 	let transitionMs = $state(480);
 	let gridVisible = $state(false);
+	let transitionInProgress = false;
+	let queuedCell: HeroGridCell | null = null;
 
 	let candidateId: string | null = null;
 	let activationTimer: ReturnType<typeof setTimeout> | undefined;
 	let dwellTimer: ReturnType<typeof setTimeout> | undefined;
 	let leaveTimer: ReturnType<typeof setTimeout> | undefined;
+	let transitionTimer: ReturnType<typeof setTimeout> | undefined;
 	let frameRequest: number | undefined;
 
 	const rowCount = $derived(cells.length);
@@ -54,6 +59,7 @@
 			if (activationTimer) clearTimeout(activationTimer);
 			if (dwellTimer) clearTimeout(dwellTimer);
 			if (leaveTimer) clearTimeout(leaveTimer);
+			if (transitionTimer) clearTimeout(transitionTimer);
 			if (frameRequest) cancelAnimationFrame(frameRequest);
 		};
 	});
@@ -84,7 +90,14 @@
 		const row = Math.min(Math.floor((relativeY / bounds.height) * rowCount), rowCount - 1);
 		const cell = cells[row]?.[column];
 
-		if (!cell || cell.id === activeCell?.id || cell.id === candidateId) return;
+		if (!cell) return;
+		if (cell.id === activeCell?.id) {
+			candidateId = null;
+			if (dwellTimer) clearTimeout(dwellTimer);
+			if (transitionInProgress) queuedCell = null;
+			return;
+		}
+		if (cell.id === candidateId) return;
 
 		if (dwellTimer) clearTimeout(dwellTimer);
 		candidateId = cell.id;
@@ -100,23 +113,61 @@
 
 		if (activeCell?.leaveBehavior === 'clear') {
 			leaveTimer = setTimeout(() => {
-				activeLayer = -1;
-				activeCell = null;
+				clearActiveCell();
 			}, 180);
 		}
 	}
 
 	function showCell(cell: HeroGridCell) {
+		if (transitionInProgress) {
+			queuedCell = cell;
+			return;
+		}
+
 		const nextLayer = activeLayer === 0 ? 1 : 0;
+		const previousLayer = activeLayer;
+		transitionInProgress = true;
 		transitionMs = cell.transitionMs;
 		activeCell = cell;
+		if (transitionTimer) clearTimeout(transitionTimer);
 
 		if (nextLayer === 0) layerA = cell;
 		else layerB = cell;
 
+		outgoingLayer = previousLayer;
+		incomingLayer = nextLayer;
+
 		if (frameRequest) cancelAnimationFrame(frameRequest);
 		frameRequest = requestAnimationFrame(() => {
 			activeLayer = nextLayer;
+			transitionTimer = setTimeout(() => {
+				outgoingLayer = -1;
+				incomingLayer = -1;
+				transitionInProgress = false;
+
+				const nextCell = queuedCell;
+				queuedCell = null;
+				if (nextCell && nextCell.id !== activeCell?.id) {
+					frameRequest = requestAnimationFrame(() => showCell(nextCell));
+				}
+			}, cell.transitionMs);
+		});
+	}
+
+	function clearActiveCell() {
+		queuedCell = null;
+		transitionInProgress = false;
+		if (transitionTimer) clearTimeout(transitionTimer);
+		if (frameRequest) cancelAnimationFrame(frameRequest);
+
+		outgoingLayer = -1;
+		incomingLayer = activeLayer;
+		frameRequest = requestAnimationFrame(() => {
+			activeLayer = -1;
+			activeCell = null;
+			transitionTimer = setTimeout(() => {
+				incomingLayer = -1;
+			}, transitionMs);
 		});
 	}
 
@@ -141,6 +192,8 @@
 	>
 		<div
 			class:active={activeLayer === 0}
+			class:outgoing={outgoingLayer === 0}
+			class:incoming={incomingLayer === 0}
 			class="background-layer"
 			style:background-image={backgroundImage(layerA)}
 			style:background-color={layerA?.backgroundColor ?? 'transparent'}
@@ -153,6 +206,8 @@
 		></div>
 		<div
 			class:active={activeLayer === 1}
+			class:outgoing={outgoingLayer === 1}
+			class:incoming={incomingLayer === 1}
 			class="background-layer"
 			style:background-image={backgroundImage(layerB)}
 			style:background-color={layerB?.backgroundColor ?? 'transparent'}
@@ -202,13 +257,18 @@
 		opacity: 0;
 		filter: var(--hero-image-filter);
 		transform: scale(var(--hero-image-scale));
-		transition: opacity var(--hero-transition) cubic-bezier(0.22, 1, 0.36, 1);
 		background-repeat: no-repeat;
 		will-change: opacity;
 	}
 
-	.background-layer.active {
+	.background-layer.active,
+	.background-layer.outgoing {
 		opacity: var(--hero-image-opacity);
+	}
+
+	.background-layer.incoming {
+		z-index: 1;
+		transition: opacity var(--hero-transition) cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
 	.grid-lines {
