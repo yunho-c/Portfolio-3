@@ -178,6 +178,7 @@
 
 <section
 	class="interactive-hero"
+	class:collage-active={activeCell !== null}
 	role="presentation"
 	bind:this={heroElement}
 	onpointermove={handlePointerMove}
