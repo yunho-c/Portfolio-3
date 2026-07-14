@@ -71,20 +71,18 @@
 	.intro-panel::before {
 		position: absolute;
 		z-index: -1;
-		inset: -1.25rem;
+		inset: -1.75rem -1.25rem;
 		content: '';
 		pointer-events: none;
 		opacity: 0;
 		transform: scale(0.985);
-		border: 1px solid transparent;
-		border-radius: 1.75rem;
-		background: linear-gradient(135deg, oklch(0.12 0.018 75 / 82%), oklch(0.08 0.012 75 / 74%));
+		border-radius: 1.25rem;
+		background: linear-gradient(135deg, oklch(0.12 0.018 75 / 68%), oklch(0.08 0.012 75 / 60%));
 		box-shadow: 0 1.5rem 4rem oklch(0.04 0.01 75 / 0%);
 		backdrop-filter: blur(0) saturate(1);
 		transition:
 			opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
 			transform 480ms cubic-bezier(0.22, 1, 0.36, 1),
-			border-color 420ms ease,
 			box-shadow 480ms ease,
 			backdrop-filter 480ms ease;
 	}
@@ -98,8 +96,7 @@
 	:global(.interactive-hero.collage-active) .intro-panel::before {
 		opacity: 1;
 		transform: scale(1);
-		border-color: oklch(0.9 0.055 84 / 18%);
-		box-shadow: 0 1.5rem 4rem oklch(0.03 0.01 75 / 38%);
+		box-shadow: 0 1.5rem 4rem oklch(0.03 0.01 75 / 28%);
 		backdrop-filter: blur(0.9rem) saturate(0.82);
 	}
 
@@ -169,6 +166,12 @@
 		45% {
 			color: oklch(0.7 0.15 78);
 			text-shadow: 0 0 0.65rem oklch(0.78 0.14 82 / 55%);
+		}
+	}
+
+	@media (min-width: 40rem) {
+		.intro-panel::before {
+			inset: -2.5rem;
 		}
 	}
 
