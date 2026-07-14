@@ -6,7 +6,7 @@
 
 	export let data: PageData;
 
-	const heroGridCells = createHeroGridCells(data.heroImages);
+	const heroGridCells = createHeroGridCells(data.heroImages, { cellImages: data.heroCollageImages });
 </script>
 
 <InteractiveHero cells={heroGridCells} activationDelay={8360}>

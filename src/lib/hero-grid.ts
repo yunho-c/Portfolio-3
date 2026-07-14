@@ -24,6 +24,12 @@ export interface HeroGridCell {
 
 export type HeroGridCellOverride = Partial<Omit<HeroGridCell, 'id' | 'row' | 'column'>>;
 export type HeroGridCellOverrides = Record<`${number}:${number}`, HeroGridCellOverride>;
+export type HeroGridCellImages = Partial<Record<`${number}:${number}`, string>>;
+
+export interface HeroGridOptions {
+	cellImages?: HeroGridCellImages;
+	overrides?: HeroGridCellOverrides;
+}
 
 const FALLBACK_IMAGES = ['/images/mpcnc_lowrider2_part_collage.jpg'];
 const ROW_POSITIONS = ['18%', '31%', '43%', '57%', '70%', '83%'];
@@ -53,7 +59,7 @@ export const heroGridCellOverrides: HeroGridCellOverrides = {
 
 export function createHeroGridCells(
 	images: string[],
-	overrides: HeroGridCellOverrides = heroGridCellOverrides
+	{ cellImages = {}, overrides = heroGridCellOverrides }: HeroGridOptions = {}
 ): HeroGridCell[][] {
 	const imagePool = images.filter(Boolean);
 	const availableImages = imagePool.length > 0 ? imagePool : FALLBACK_IMAGES;
@@ -80,7 +86,11 @@ export function createHeroGridCells(
 				leaveBehavior: 'clear'
 			};
 
-			return { ...baseCell, ...overrides[id] };
+			return {
+				...baseCell,
+				...overrides[id],
+				...(cellImages[id] ? { image: cellImages[id] } : {})
+			};
 		})
 	);
 }

@@ -18,6 +18,7 @@
 	let layerB = $state<HeroGridCell | null>(null);
 	let activeLayer = $state<-1 | 0 | 1>(-1);
 	let transitionMs = $state(480);
+	let gridVisible = $state(false);
 
 	let candidateId: string | null = null;
 	let activationTimer: ReturnType<typeof setTimeout> | undefined;
@@ -35,6 +36,7 @@
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		if (!supportsInteraction || prefersReducedMotion) return;
+		window.addEventListener('keydown', handleGridToggle);
 
 		const uniqueImages = new Set(cells.flat().map((cell) => cell.image).filter(Boolean));
 		for (const source of uniqueImages) {
@@ -48,12 +50,27 @@
 		}, activationDelay);
 
 		return () => {
+			window.removeEventListener('keydown', handleGridToggle);
 			if (activationTimer) clearTimeout(activationTimer);
 			if (dwellTimer) clearTimeout(dwellTimer);
 			if (leaveTimer) clearTimeout(leaveTimer);
 			if (frameRequest) cancelAnimationFrame(frameRequest);
 		};
 	});
+
+	function handleGridToggle(event: KeyboardEvent) {
+		if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+
+		const target = event.target;
+		if (
+			target instanceof HTMLElement &&
+			(target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+		) {
+			return;
+		}
+
+		if (event.key.toLowerCase() === 'v') gridVisible = !gridVisible;
+	}
 
 	function handlePointerMove(event: PointerEvent) {
 		if (!enabled || event.pointerType === 'touch' || rowCount === 0 || columnCount === 0) return;
@@ -148,9 +165,9 @@
 		></div>
 
 		<div class="background-wash"></div>
-		<div class:visible={activeCell !== null} class="grid-lines"></div>
+		<div class:visible={gridVisible} class="grid-lines"></div>
 
-		{#if activeCell}
+		{#if activeCell && gridVisible}
 			<div
 				class="active-cell"
 				style:left={`${(activeCell.column / columnCount) * 100}%`}
