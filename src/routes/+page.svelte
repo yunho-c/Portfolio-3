@@ -21,9 +21,9 @@
 		style="--intro-delay: 2460ms"
 	>
 		I am a machine learning engineer interested in foundational
-		<span class="mystic-highlight text-foreground" style="--glint-delay: 3070ms">language</span>,
-		<span class="mystic-highlight text-foreground" style="--glint-delay: 3210ms">vision</span>, and
-		<span class="mystic-highlight text-foreground" style="--glint-delay: 3350ms"
+		<span class="mystic-highlight text-foreground" style="--glint-delay: 3500ms">language</span>,
+		<span class="mystic-highlight text-foreground" style="--glint-delay: 4100ms">vision</span>, and
+		<span class="mystic-highlight text-foreground" style="--glint-delay: 4700ms"
 			>human-computer interaction</span
 		>
 		technologies.
@@ -32,7 +32,7 @@
 	<!-- Tertiary Context (Smaller, Playful) -->
 	<p
 		class="intro-line mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl"
-		style="--intro-delay: 4460ms"
+		style="--intro-delay: 6460ms"
 	>
 		I am generally interested about everything and quite
 		<span class="cursor-help text-foreground transition-all duration-300 hover:blur-[3px]">distracted</span>,
@@ -62,7 +62,7 @@
 	}
 
 	.mystic-highlight {
-		animation: keyword-glint 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation: keyword-glint 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
 		animation-delay: var(--glint-delay);
 	}
 
