@@ -36,3 +36,10 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Hero videos
+
+YouTube and direct-video URLs stored in `static/collage/<CELL>.txt` can be
+downloaded, optimized, and uploaded to Cloudflare R2 with the repo-local media
+scripts. See [Hero video publishing](docs/hero-video-publishing.md) for setup and
+usage.
