@@ -20,7 +20,7 @@
 	];
 </script>
 
-<InteractiveHero cells={heroGridCells} activationDelay={10640}>
+<InteractiveHero cells={heroGridCells} activationDelay={12040}>
 	<main class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32">
 		<div class="intro-panel">
 			<!-- Primary Anchor (Huge, Bold) -->
@@ -56,7 +56,7 @@
 			<!-- Tertiary Context (Smaller, Playful) -->
 			<p
 				class="intro-line mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl"
-				style="--intro-delay: 9740ms"
+				style="--intro-delay: 11140ms"
 			>
 				I am generally interested about everything and quite
 				<span class="cursor-help text-foreground transition-all duration-300 hover:blur-[3px]"
@@ -68,13 +68,13 @@
 </InteractiveHero>
 
 <div class="container mx-auto px-4 pt-8 pb-20 sm:px-6 sm:pt-10 lg:px-8">
-	<div class="intro-line mb-8 flex items-center justify-between" style="--intro-delay: 11740ms">
+	<div class="intro-line mb-8 flex items-center justify-between" style="--intro-delay: 13140ms">
 		<h3 class="text-2xl font-bold tracking-tight text-foreground">Featured Projects</h3>
 		<a href="/projects" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
 			View all projects &rarr;
 		</a>
 	</div>
-	<ProjectGrid projects={data.projects.slice(0, 4)} reveal revealDelay={12240} revealInterval={220} />
+	<ProjectGrid projects={data.projects.slice(0, 4)} reveal revealDelay={13640} revealInterval={220} />
 </div>
 
 <style>
