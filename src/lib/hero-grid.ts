@@ -48,23 +48,26 @@ export const heroGridCellOverrides: HeroGridCellOverrides = {
 	}
 };
 
-export function createHeroGridCells(
-	images: string[],
-	{ cellImages = {}, overrides = heroGridCellOverrides }: HeroGridOptions = {}
-): HeroGridCell[][] {
-	const imagePool = images.filter(Boolean);
-	const collageImagePool = Object.values(cellImages).filter((image): image is string => Boolean(image));
-	const availableImages = imagePool.length > 0 ? imagePool : collageImagePool.length > 0 ? collageImagePool : [''];
+export function createHeroGridCells({
+	cellImages = {},
+	overrides = heroGridCellOverrides
+}: HeroGridOptions = {}): HeroGridCell[][] {
+	const cells: HeroGridCell[][] = [];
 
-	return Array.from({ length: HERO_GRID_ROWS }, (_, row) =>
-		Array.from({ length: HERO_GRID_COLUMNS }, (_, column) => {
+	for (let row = 0; row < HERO_GRID_ROWS; row += 1) {
+		const rowCells: HeroGridCell[] = [];
+
+		for (let column = 0; column < HERO_GRID_COLUMNS; column += 1) {
 			const id = `${row}:${column}` as const;
+			const explicitImage = cellImages[id] || overrides[id]?.image;
+			const image =
+				explicitImage || rowCells[column - 1]?.image || cells[row - 1]?.[column]?.image || '';
 			const baseCell: HeroGridCell = {
 				id,
 				row,
 				column,
 				label: `Hero cell ${row + 1}, ${column + 1}`,
-				image: availableImages[column % availableImages.length],
+				image,
 				backgroundColor: 'transparent',
 				position: 'center center',
 				size: 'cover',
@@ -77,11 +80,15 @@ export function createHeroGridCells(
 				leaveBehavior: 'clear'
 			};
 
-			return {
+			rowCells.push({
 				...baseCell,
 				...overrides[id],
-				...(cellImages[id] ? { image: cellImages[id] } : {})
-			};
-		})
-	);
+				image
+			});
+		}
+
+		cells.push(rowCells);
+	}
+
+	return cells;
 }

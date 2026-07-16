@@ -6,7 +6,7 @@
 
 	export let data: PageData;
 
-	const heroGridCells = createHeroGridCells(data.heroImages, { cellImages: data.heroCollageImages });
+	const heroGridCells = createHeroGridCells({ cellImages: data.heroCollageImages });
 	const greetingWords = [
 		{ text: 'Hi,', delay: 0 },
 		{ text: 'nice', delay: 800 },
