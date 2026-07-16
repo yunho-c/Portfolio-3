@@ -46,8 +46,8 @@
 			>
 				I am a machine learning engineer interested in foundational
 				<span class="mystic-highlight text-foreground" style="--glint-delay: 6780ms">language</span>,
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 7380ms">vision</span>, and
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 7980ms"
+				<span class="mystic-highlight text-foreground" style="--glint-delay: 7780ms">vision</span>, and
+				<span class="mystic-highlight text-foreground" style="--glint-delay: 8780ms"
 					>human-computer interaction</span
 				>
 				technologies.
@@ -134,7 +134,7 @@
 	}
 
 	.mystic-highlight {
-		animation: keyword-glint 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation: keyword-glint 2000ms cubic-bezier(0.22, 1, 0.36, 1) both;
 		animation-delay: var(--glint-delay);
 	}
 
