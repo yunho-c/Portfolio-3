@@ -4,12 +4,25 @@ export const HERO_GRID_ROWS = 6;
 export type HeroGridLeaveBehavior = 'clear' | 'hold';
 export type HeroGridBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light';
 
+export interface HeroGridImageMedia {
+	kind: 'image';
+	src: string;
+}
+
+export interface HeroGridVideoMedia {
+	kind: 'video';
+	src: string;
+	poster: string;
+}
+
+export type HeroGridMedia = HeroGridImageMedia | HeroGridVideoMedia;
+
 export interface HeroGridCell {
 	id: string;
 	row: number;
 	column: number;
 	label: string;
-	image: string;
+	media: HeroGridMedia | null;
 	backgroundColor: string;
 	position: string;
 	size: string;
@@ -24,16 +37,16 @@ export interface HeroGridCell {
 
 export type HeroGridCellOverride = Partial<Omit<HeroGridCell, 'id' | 'row' | 'column'>>;
 export type HeroGridCellOverrides = Record<`${number}:${number}`, HeroGridCellOverride>;
-export type HeroGridCellImages = Partial<Record<`${number}:${number}`, string>>;
+export type HeroGridCellMedia = Partial<Record<`${number}:${number}`, HeroGridMedia>>;
 
 export interface HeroGridOptions {
-	cellImages?: HeroGridCellImages;
+	cellMedia?: HeroGridCellMedia;
 	overrides?: HeroGridCellOverrides;
 }
 
 /**
  * Define one-off content or behavior with a `row:column` key (both are zero-based).
- * Every field in HeroGridCell can be overridden independently, including `image`,
+ * Every field in HeroGridCell can be overridden independently, including `media`,
  * so rows do not have to share the column's default image.
  */
 export const heroGridCellOverrides: HeroGridCellOverrides = {
@@ -49,7 +62,7 @@ export const heroGridCellOverrides: HeroGridCellOverrides = {
 };
 
 export function createHeroGridCells({
-	cellImages = {},
+	cellMedia = {},
 	overrides = heroGridCellOverrides
 }: HeroGridOptions = {}): HeroGridCell[][] {
 	const cells: HeroGridCell[][] = [];
@@ -59,15 +72,15 @@ export function createHeroGridCells({
 
 		for (let column = 0; column < HERO_GRID_COLUMNS; column += 1) {
 			const id = `${row}:${column}` as const;
-			const explicitImage = cellImages[id] || overrides[id]?.image;
-			const image =
-				explicitImage || rowCells[column - 1]?.image || cells[row - 1]?.[column]?.image || '';
+			const explicitMedia = cellMedia[id] ?? overrides[id]?.media;
+			const media =
+				explicitMedia ?? rowCells[column - 1]?.media ?? cells[row - 1]?.[column]?.media ?? null;
 			const baseCell: HeroGridCell = {
 				id,
 				row,
 				column,
 				label: `Hero cell ${row + 1}, ${column + 1}`,
-				image,
+				media,
 				backgroundColor: 'transparent',
 				position: 'center center',
 				size: 'cover',
@@ -83,7 +96,7 @@ export function createHeroGridCells({
 			rowCells.push({
 				...baseCell,
 				...overrides[id],
-				image
+				media
 			});
 		}
 

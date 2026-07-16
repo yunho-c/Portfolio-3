@@ -43,7 +43,7 @@
 		if (!supportsInteraction || prefersReducedMotion) return;
 		window.addEventListener('keydown', handleGridToggle);
 
-		const uniqueImages = new Set(cells.flat().map((cell) => cell.image).filter(Boolean));
+		const uniqueImages = new Set(cells.flat().map(mediaPoster).filter(Boolean));
 		for (const source of uniqueImages) {
 			const image = new Image();
 			image.decoding = 'async';
@@ -171,8 +171,18 @@
 		});
 	}
 
+	function mediaPoster(cell: HeroGridCell) {
+		if (!cell.media) return '';
+		return cell.media.kind === 'image' ? cell.media.src : cell.media.poster;
+	}
+
 	function backgroundImage(cell: HeroGridCell | null) {
-		return cell?.image ? `url(${JSON.stringify(cell.image)})` : 'none';
+		const source = cell ? mediaPoster(cell) : '';
+		return source ? `url(${JSON.stringify(source)})` : 'none';
+	}
+
+	function layerVisible(layer: 0 | 1) {
+		return activeLayer === layer || incomingLayer === layer || outgoingLayer === layer;
 	}
 </script>
 
@@ -204,7 +214,23 @@
 			style:--hero-image-filter={layerA?.filter ?? 'none'}
 			style:--hero-image-scale={`${layerA?.scale ?? 1}`}
 			style:mix-blend-mode={layerA?.blendMode ?? 'normal'}
-		></div>
+		>
+			{#if layerA?.media?.kind === 'video' && layerVisible(0)}
+				<video
+					class="background-video"
+					src={layerA.media.src}
+					poster={layerA.media.poster}
+					autoplay
+					muted
+					loop
+					playsinline
+					preload="metadata"
+					disablepictureinpicture
+					style:object-position={layerA.position}
+					style:object-fit={layerA.size}
+				></video>
+			{/if}
+		</div>
 		<div
 			class:active={activeLayer === 1}
 			class:outgoing={outgoingLayer === 1}
@@ -218,7 +244,23 @@
 			style:--hero-image-filter={layerB?.filter ?? 'none'}
 			style:--hero-image-scale={`${layerB?.scale ?? 1}`}
 			style:mix-blend-mode={layerB?.blendMode ?? 'normal'}
-		></div>
+		>
+			{#if layerB?.media?.kind === 'video' && layerVisible(1)}
+				<video
+					class="background-video"
+					src={layerB.media.src}
+					poster={layerB.media.poster}
+					autoplay
+					muted
+					loop
+					playsinline
+					preload="metadata"
+					disablepictureinpicture
+					style:object-position={layerB.position}
+					style:object-fit={layerB.size}
+				></video>
+			{/if}
+		</div>
 
 		<div class:visible={gridVisible} class="grid-lines"></div>
 
@@ -270,6 +312,12 @@
 	.background-layer.incoming {
 		z-index: 1;
 		transition: opacity var(--hero-transition) cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.background-video {
+		display: block;
+		width: 100%;
+		height: 100%;
 	}
 
 	.grid-lines {

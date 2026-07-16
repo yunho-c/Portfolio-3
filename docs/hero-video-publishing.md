@@ -12,9 +12,9 @@ The publishing workflow keeps stable R2 object names (`A4.mp4` and `A4.jpg`),
 so changing the URL in `A4.txt` replaces that cell without changing the public
 URL.
 
-This pipeline prepares and publishes the media; it does not by itself make the
-image-only hero renderer play videos. The frontend must separately map `.txt`
-cells to their public R2 URLs and render video layers.
+At build time, the hero loader maps each `.txt` declaration to those public R2
+objects. Hovering the corresponding grid cell loads its MP4 over the poster;
+inactive videos are not mounted or downloaded.
 
 ## 1. Fetch and optimize
 
@@ -86,6 +86,17 @@ export HERO_R2_PUBLIC_BASE_URL='https://media.example.com/hero'
 ```
 
 After that, `scripts/sync-hero-videos.sh` is sufficient.
+
+`HERO_R2_PUBLIC_BASE_URL` is also required when building or running the site.
+It must point to the public directory containing the stable objects, without a
+filename. For example, `A4.txt` with this configuration:
+
+```sh
+HERO_R2_PUBLIC_BASE_URL='https://media.example.com/hero'
+```
+
+resolves to `https://media.example.com/hero/A4.mp4` and `A4.jpg`. Restart the
+development server after changing `.env` or adding a new `.txt` cell.
 
 ## Optional CDN purge
 
