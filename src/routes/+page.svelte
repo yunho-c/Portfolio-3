@@ -2,10 +2,12 @@
 	import InteractiveHero from '$lib/components/InteractiveHero.svelte';
 	import ProjectGrid from '$lib/components/ProjectGrid.svelte';
 	import { createHeroGridCells } from '$lib/hero-grid';
+	import { consumeHomeIntro, useUiSession } from '$lib/ui-session';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
+	const playIntro = consumeHomeIntro(useUiSession());
 	const heroGridCells = createHeroGridCells({ cellMedia: data.heroCollageMedia });
 	const greetingWords = [
 		{ text: 'Hi,', delay: 0 },
@@ -20,9 +22,9 @@
 	];
 </script>
 
-<InteractiveHero cells={heroGridCells} activationDelay={12040}>
+<InteractiveHero cells={heroGridCells} activationDelay={playIntro ? 12040 : 0}>
 	<main class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32">
-		<div class="intro-panel">
+		<div class="intro-panel" class:play-home-intro={playIntro}>
 			<!-- Primary Anchor (Huge, Bold) -->
 			<h1
 				class="text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl"
@@ -68,13 +70,22 @@
 </InteractiveHero>
 
 <div class="container mx-auto px-4 pt-8 pb-20 sm:px-6 sm:pt-10 lg:px-8">
-	<div class="intro-line mb-8 flex items-center justify-between" style="--intro-delay: 13140ms">
+	<div
+		class="intro-line mb-8 flex items-center justify-between"
+		class:play-home-intro={playIntro}
+		style="--intro-delay: 13140ms"
+	>
 		<h3 class="text-2xl font-bold tracking-tight text-foreground">Featured Projects</h3>
 		<a href="/projects" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
 			View all projects &rarr;
 		</a>
 	</div>
-	<ProjectGrid projects={data.projects.slice(0, 4)} reveal revealDelay={13640} revealInterval={220} />
+	<ProjectGrid
+		projects={data.projects.slice(0, 4)}
+		reveal={playIntro}
+		revealDelay={13640}
+		revealInterval={220}
+	/>
 </div>
 
 <style>
@@ -124,7 +135,8 @@
 		text-shadow: 0 0 0.7rem oklch(0.78 0.14 82 / 28%);
 	}
 
-	.intro-line {
+	.play-home-intro .intro-line,
+	.intro-line.play-home-intro {
 		animation: intro-awaken 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 		animation-delay: var(--intro-delay);
 	}
@@ -133,7 +145,7 @@
 		display: inline-block;
 	}
 
-	.mystic-highlight {
+	.play-home-intro .mystic-highlight {
 		animation: keyword-glint 2000ms cubic-bezier(0.22, 1, 0.36, 1) both;
 		animation-delay: var(--glint-delay);
 	}
@@ -207,7 +219,7 @@
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
-		.written-word {
+		.play-home-intro .written-word {
 			animation: word-inscribe 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
 			animation-delay: calc(var(--intro-delay) + var(--word-delay));
 			transform-origin: left center;
@@ -221,8 +233,9 @@
 			transition: none;
 		}
 
-		.intro-line,
-		.mystic-highlight {
+		.play-home-intro .intro-line,
+		.intro-line.play-home-intro,
+		.play-home-intro .mystic-highlight {
 			animation: none;
 		}
 	}
