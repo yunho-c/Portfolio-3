@@ -21,11 +21,11 @@
 	let incomingLayer = $state<-1 | 0 | 1>(-1);
 	let transitionMs = $state(480);
 	let gridVisible = $state(false);
+	let interactionSupported = $state(false);
 	let transitionInProgress = false;
 	let queuedCell: HeroGridCell | null = null;
 
 	let candidateId: string | null = null;
-	let activationTimer: ReturnType<typeof setTimeout> | undefined;
 	let dwellTimer: ReturnType<typeof setTimeout> | undefined;
 	let leaveTimer: ReturnType<typeof setTimeout> | undefined;
 	let transitionTimer: ReturnType<typeof setTimeout> | undefined;
@@ -36,11 +36,22 @@
 	const cellWidth = $derived(columnCount > 0 ? `${100 / columnCount}%` : '100%');
 	const cellHeight = $derived(rowCount > 0 ? `${100 / rowCount}%` : '100%');
 
+	$effect(() => {
+		if (!interactionSupported || enabled) return;
+
+		const timer = setTimeout(() => {
+			enabled = true;
+		}, Math.max(0, activationDelay));
+
+		return () => clearTimeout(timer);
+	});
+
 	onMount(() => {
 		const supportsInteraction = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		if (!supportsInteraction || prefersReducedMotion) return;
+		interactionSupported = true;
 		window.addEventListener('keydown', handleGridToggle);
 
 		const uniqueImages = new Set(cells.flat().map(mediaPoster).filter(Boolean));
@@ -50,13 +61,8 @@
 			image.src = source;
 		}
 
-		activationTimer = setTimeout(() => {
-			enabled = true;
-		}, activationDelay);
-
 		return () => {
 			window.removeEventListener('keydown', handleGridToggle);
-			if (activationTimer) clearTimeout(activationTimer);
 			if (dwellTimer) clearTimeout(dwellTimer);
 			if (leaveTimer) clearTimeout(leaveTimer);
 			if (transitionTimer) clearTimeout(transitionTimer);

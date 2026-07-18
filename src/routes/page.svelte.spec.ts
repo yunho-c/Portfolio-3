@@ -10,4 +10,39 @@ describe('/+page.svelte', () => {
 		const heading = page.getByRole('heading', { level: 1 });
 		await expect.element(heading).toBeInTheDocument();
 	});
+
+	it('settles the intro after primary pointer input', async () => {
+		render(Page, {
+			data: {
+				projects: [
+					{
+						id: 'test',
+						slug: 'test',
+						name: 'Test project',
+						featured: true,
+						thumbnail: '/favicon.svg',
+						tags: []
+					}
+				],
+				heroCollageMedia: {}
+			}
+		});
+		const main = document.querySelector('main');
+
+		expect(main?.dataset.introActive).toBe('true');
+		window.dispatchEvent(
+			new PointerEvent('pointerdown', {
+				bubbles: true,
+				button: 0,
+				isPrimary: true,
+				pointerType: 'mouse'
+			})
+		);
+		await new Promise((resolve) => setTimeout(resolve, 400));
+
+		expect(main?.dataset.introActive).toBe('false');
+		expect(document.querySelector('.play-home-intro')).toBeNull();
+		expect(document.querySelector('.play-skip-sequence')).not.toBeNull();
+		expect(document.querySelector('.project-skip-reveal')).not.toBeNull();
+	});
 });

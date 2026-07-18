@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import InteractiveHero from '$lib/components/InteractiveHero.svelte';
 	import ProjectGrid from '$lib/components/ProjectGrid.svelte';
 	import { createHeroGridCells } from '$lib/hero-grid';
@@ -7,8 +8,17 @@
 
 	export let data: PageData;
 
-	const playIntro = consumeHomeIntro(useUiSession());
+	let playIntro = consumeHomeIntro(useUiSession());
+	let playSkipSequence = false;
+	let introActive = playIntro;
+	let skipPhase: 'idle' | 'out' | 'in' = 'idle';
+	let introCompletionTimer: ReturnType<typeof setTimeout> | undefined;
+	let skipTimer: ReturnType<typeof setTimeout> | undefined;
+
 	const heroGridCells = createHeroGridCells({ cellMedia: data.heroCollageMedia });
+	const featuredProjects = data.projects.slice(0, 4);
+	const introDuration =
+		Math.max(14040, featuredProjects.length > 0 ? 14440 + (featuredProjects.length - 1) * 220 : 0) + 100;
 	const greetingWords = [
 		{ text: 'Hi,', delay: 0 },
 		{ text: 'nice', delay: 800 },
@@ -20,15 +30,70 @@
 		{ text: 'is', delay: 2200 },
 		{ text: 'Yunho', delay: 2320 }
 	];
+
+	onMount(() => {
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			playIntro = false;
+			playSkipSequence = false;
+			introActive = false;
+			return;
+		}
+
+		if (introActive) {
+			introCompletionTimer = setTimeout(() => {
+				introActive = false;
+			}, introDuration);
+		}
+
+		return () => {
+			if (introCompletionTimer) clearTimeout(introCompletionTimer);
+			if (skipTimer) clearTimeout(skipTimer);
+		};
+	});
+
+	function skipIntro() {
+		if (!introActive || skipPhase !== 'idle') return;
+
+		if (introCompletionTimer) clearTimeout(introCompletionTimer);
+		skipPhase = 'out';
+		skipTimer = setTimeout(() => {
+			playIntro = false;
+			playSkipSequence = true;
+			introActive = false;
+			skipPhase = 'in';
+			skipTimer = setTimeout(() => {
+				skipPhase = 'idle';
+			}, 220);
+		}, 120);
+	}
+
+	function handleIntroPointer(event: PointerEvent) {
+		if (!event.defaultPrevented && event.isPrimary && event.button === 0) skipIntro();
+	}
+
+	function handleIntroKeydown(event: KeyboardEvent) {
+		if (!event.defaultPrevented && event.key === 'Escape') skipIntro();
+	}
 </script>
 
+<svelte:window onpointerdown={handleIntroPointer} onkeydown={handleIntroKeydown} />
+
 <InteractiveHero cells={heroGridCells} activationDelay={playIntro ? 12040 : 0}>
-	<main class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32">
-		<div class="intro-panel" class:play-home-intro={playIntro}>
+	<main
+		class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32"
+		class:intro-skip-out={skipPhase === 'out'}
+		class:intro-skip-in={skipPhase === 'in'}
+		data-intro-active={introActive}
+	>
+		<div
+			class="intro-panel"
+			class:play-home-intro={playIntro}
+			class:play-skip-sequence={playSkipSequence}
+		>
 			<!-- Primary Anchor (Huge, Bold) -->
 			<h1
-				class="text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl"
-				style="--intro-delay: 460ms"
+				class="intro-part text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl"
+				style="--intro-delay: 460ms; --skip-intro-delay: 0ms"
 				aria-label="Hi, nice to meet you, my name is Yunho ('you-know')."
 			>
 				{#each greetingWords as word, index}
@@ -43,8 +108,8 @@
 
 			<!-- Secondary Thesis (Large, Muted with Highlighted Keywords) -->
 			<p
-				class="intro-line mt-8 text-2xl font-medium leading-snug text-muted-foreground sm:text-3xl"
-				style="--intro-delay: 4740ms"
+				class="intro-line intro-part mt-8 text-2xl font-medium leading-snug text-muted-foreground sm:text-3xl"
+				style="--intro-delay: 4740ms; --skip-intro-delay: 90ms"
 			>
 				I am a machine learning engineer interested in foundational
 				<span class="mystic-highlight text-foreground" style="--glint-delay: 6780ms">language</span>,
@@ -57,8 +122,8 @@
 
 			<!-- Tertiary Context (Smaller, Playful) -->
 			<p
-				class="intro-line mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl"
-				style="--intro-delay: 11140ms"
+				class="intro-line intro-part mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl"
+				style="--intro-delay: 11140ms; --skip-intro-delay: 180ms"
 			>
 				I am generally interested about everything and quite
 				<span class="cursor-help text-foreground transition-all duration-300 hover:blur-[3px]"
@@ -69,10 +134,15 @@
 	</main>
 </InteractiveHero>
 
-<div class="container mx-auto px-4 pt-8 pb-20 sm:px-6 sm:pt-10 lg:px-8">
+<div
+	class="container mx-auto px-4 pt-8 pb-20 sm:px-6 sm:pt-10 lg:px-8"
+	class:intro-skip-out={skipPhase === 'out'}
+	class:intro-skip-in={skipPhase === 'in'}
+>
 	<div
 		class="intro-line mb-8 flex items-center justify-between"
 		class:play-home-intro={playIntro}
+		class:play-skip-projects={playSkipSequence}
 		style="--intro-delay: 13140ms"
 	>
 		<h3 class="text-2xl font-bold tracking-tight text-foreground">Featured Projects</h3>
@@ -81,14 +151,35 @@
 		</a>
 	</div>
 	<ProjectGrid
-		projects={data.projects.slice(0, 4)}
-		reveal={playIntro}
-		revealDelay={13640}
-		revealInterval={220}
+		projects={featuredProjects}
+		reveal={playIntro || playSkipSequence}
+		revealVariant={playSkipSequence ? 'skip' : 'full'}
+		revealDelay={playSkipSequence ? 360 : 13640}
+		revealInterval={playSkipSequence ? 120 : 220}
 	/>
 </div>
 
 <style>
+	.intro-skip-out {
+		opacity: 0;
+		transition: opacity 120ms ease-in;
+	}
+
+	.intro-skip-in {
+		opacity: 1;
+		transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.play-skip-sequence .intro-part {
+		animation: skip-intro-reveal 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation-delay: var(--skip-intro-delay);
+	}
+
+	.intro-line.play-skip-projects {
+		animation: skip-intro-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation-delay: 280ms;
+	}
+
 	.intro-panel {
 		position: relative;
 		isolation: isolate;
@@ -172,6 +263,20 @@
 		}
 	}
 
+	@keyframes skip-intro-reveal {
+		from {
+			opacity: 0;
+			filter: blur(0.2rem);
+			transform: translateY(0.4rem);
+		}
+
+		to {
+			opacity: 1;
+			filter: blur(0);
+			transform: translateY(0);
+		}
+	}
+
 	@keyframes word-inscribe {
 		0% {
 			opacity: 0;
@@ -228,6 +333,11 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.intro-skip-out,
+		.intro-skip-in {
+			transition: none;
+		}
+
 		.intro-panel,
 		.intro-panel::before {
 			transition: none;
@@ -235,7 +345,9 @@
 
 		.play-home-intro .intro-line,
 		.intro-line.play-home-intro,
-		.play-home-intro .mystic-highlight {
+		.play-home-intro .mystic-highlight,
+		.play-skip-sequence .intro-part,
+		.intro-line.play-skip-projects {
 			animation: none;
 		}
 	}
