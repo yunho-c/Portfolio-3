@@ -29,18 +29,21 @@
 		class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
 	></div>
 	<div class="absolute inset-0 flex flex-col p-4 text-white">
-		<h3 class="font-semibold text-white drop-shadow-[0_0_9px_rgba(0,0,0,0.9)]">{project.name}</h3>
-
-		<div
-			class="mt-auto translate-y-2 opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
-		>
+		<div>
+			<h3 class="font-semibold text-white drop-shadow-[0_0_9px_rgba(0,0,0,0.9)]">{project.name}</h3>
 			{#if project.description}
-				<p class="project-card-description mb-3 line-clamp-3 text-sm leading-snug text-white/90 drop-shadow-sm">
+				<p
+					class="project-card-description mt-2 line-clamp-3 -translate-y-1 text-sm leading-snug text-white/90 opacity-0 drop-shadow-sm transition-[opacity,transform] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+				>
 					{project.description}
 				</p>
 			{/if}
+		</div>
 
-			{#if project.tags.length > 0}
+		{#if project.tags.length > 0}
+			<div
+				class="project-card-tags mt-auto translate-y-2 opacity-0 transition-[opacity,transform] duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+			>
 				<div class="flex flex-wrap gap-1.5">
 					{#each project.tags as tag}
 						<div
@@ -53,7 +56,7 @@
 						</div>
 					{/each}
 				</div>
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 </a>
