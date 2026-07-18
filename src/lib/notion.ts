@@ -34,6 +34,17 @@ const ICON_MAP: Record<string, string> = {
 };
 
 const THUMBNAIL_COLORS = ['9333ea', 'f59e0b', '10b981', 'ef4444', '3b82f6'];
+const NOT_PUBLISHED_STATUS = 'Not published';
+
+interface NotionProjectStatusPage {
+	properties?: {
+		Status?: {
+			status?: {
+				name?: string;
+			} | null;
+		};
+	};
+}
 
 export interface Project {
 	id: string;
@@ -49,6 +60,11 @@ function slugify(text: string) {
 	return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 }
 
+export function isProjectPublished(page: unknown): boolean {
+	const projectPage = page as NotionProjectStatusPage;
+	return projectPage.properties?.Status?.status?.name !== NOT_PUBLISHED_STATUS;
+}
+
 export async function getProjects(): Promise<Project[]> {
 	if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) {
 		console.warn('Missing Notion API keys. Returning mock projects.');
@@ -60,7 +76,7 @@ export async function getProjects(): Promise<Project[]> {
 			database_id: env.NOTION_DATABASE_ID
 		});
 
-		return response.results.map((page: any) => {
+		return response.results.filter(isProjectPublished).map((page: any) => {
 			const name = page.properties.Name?.title[0]?.plain_text || 'Untitled';
 			const color = THUMBNAIL_COLORS[name.length % THUMBNAIL_COLORS.length];
 			const placeholder = `https://placehold.co/600x400/${color}/white?text=${encodeURIComponent(name)}`;
@@ -96,7 +112,7 @@ export async function getProjectBySlug(slug: string): Promise<{ project: Project
 	// Find the specific page that matches our slugified URL
 	const page = response.results.find((p: any) => {
 		const pName = p.properties.Name?.title[0]?.plain_text || '';
-		return slugify(pName) === slug;
+		return isProjectPublished(p) && slugify(pName) === slug;
 	}) as any;
 
 	if (!page) return null;
