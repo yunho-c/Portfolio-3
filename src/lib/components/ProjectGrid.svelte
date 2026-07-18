@@ -1,7 +1,8 @@
 <script lang="ts">
+	import type { Project } from '$lib/notion';
 	import ProjectCard from './ProjectCard.svelte';
 
-	export let projects: { id: string; slug: string; name: string; thumbnail: string; tags?: { name: string; icon: string }[] }[];
+	export let projects: Project[];
 	export let reveal = false;
 	export let revealVariant: 'full' | 'skip' = 'full';
 	export let revealDelay = 0;

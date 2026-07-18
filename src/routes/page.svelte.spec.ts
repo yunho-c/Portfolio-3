@@ -21,6 +21,7 @@ describe('/+page.svelte', () => {
 						name: 'Test project',
 						featured: true,
 						thumbnail: '/favicon.svg',
+						description: 'A test project description.',
 						tags: []
 					}
 				],

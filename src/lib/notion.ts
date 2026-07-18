@@ -46,12 +46,23 @@ interface NotionProjectStatusPage {
 	};
 }
 
+interface NotionProjectDescriptionPage {
+	properties?: {
+		'One-Liner'?: {
+			rich_text?: Array<{
+				plain_text?: string;
+			}>;
+		};
+	};
+}
+
 export interface Project {
 	id: string;
 	slug: string;
 	name: string;
 	featured: boolean;
 	thumbnail: string;
+	description: string;
 	tags: { name: string; icon: string }[];
 }
 
@@ -63,6 +74,16 @@ function slugify(text: string) {
 export function isProjectPublished(page: unknown): boolean {
 	const projectPage = page as NotionProjectStatusPage;
 	return projectPage.properties?.Status?.status?.name !== NOT_PUBLISHED_STATUS;
+}
+
+export function getProjectDescription(page: unknown): string {
+	const projectPage = page as NotionProjectDescriptionPage;
+	return (
+		projectPage.properties?.['One-Liner']?.rich_text
+			?.map((part) => part.plain_text ?? '')
+			.join('')
+			.trim() ?? ''
+	);
 }
 
 export async function getProjects(): Promise<Project[]> {
@@ -87,6 +108,7 @@ export async function getProjects(): Promise<Project[]> {
 				name,
 				featured: page.properties.Featured?.checkbox || false,
 				thumbnail: page.properties.Thumbnail?.url || placeholder,
+				description: getProjectDescription(page),
 				tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({
 					name: tag.name,
 					icon: ICON_MAP[tag.name] || ''
@@ -127,6 +149,7 @@ export async function getProjectBySlug(slug: string): Promise<{ project: Project
 		name,
 		featured: page.properties.Featured?.checkbox || false,
 		thumbnail: page.properties.Thumbnail?.url || placeholder,
+		description: getProjectDescription(page),
 		tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({ 
 			name: tag.name, 
 			icon: ICON_MAP[tag.name] || '' 
@@ -151,6 +174,7 @@ function getMockProjects(): Project[] {
 			name: 'E-Commerce Platform (Mock)',
 			featured: true,
 			thumbnail: 'https://placehold.co/400x400/9333ea/white?text=E-Commerce',
+			description: 'A mock storefront demonstrating the project-card layout.',
 			tags: [
 				{ name: 'React', icon: 'logos:react' },
 				{ name: 'Node.js', icon: 'logos:nodejs-icon' }

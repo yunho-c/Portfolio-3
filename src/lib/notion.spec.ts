@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isProjectPublished } from './notion';
+import { getProjectDescription, isProjectPublished } from './notion';
 
 describe('isProjectPublished', () => {
 	it('hides projects whose Status is Not published', () => {
@@ -20,5 +20,23 @@ describe('isProjectPublished', () => {
 
 	it('keeps projects without a status', () => {
 		expect(isProjectPublished({ properties: {} })).toBe(true);
+	});
+});
+
+describe('getProjectDescription', () => {
+	it('joins all rich-text fragments in the One-Liner field', () => {
+		expect(
+			getProjectDescription({
+				properties: {
+					'One-Liner': {
+						rich_text: [{ plain_text: 'A concise ' }, { plain_text: 'project description.' }]
+					}
+				}
+			})
+		).toBe('A concise project description.');
+	});
+
+	it('returns an empty description when One-Liner is missing', () => {
+		expect(getProjectDescription({ properties: {} })).toBe('');
 	});
 });
