@@ -155,7 +155,7 @@
 		reveal={playIntro || playSkipSequence}
 		revealVariant={playSkipSequence ? 'skip' : 'full'}
 		revealDelay={playSkipSequence ? 360 : 13640}
-		revealInterval={playSkipSequence ? 120 : 220}
+		revealInterval={220}
 	/>
 </div>
 
@@ -171,12 +171,12 @@
 	}
 
 	.play-skip-sequence .intro-part {
-		animation: skip-intro-reveal 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: skip-intro-awaken 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 		animation-delay: var(--skip-intro-delay);
 	}
 
 	.intro-line.play-skip-projects {
-		animation: skip-intro-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: skip-intro-awaken 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 		animation-delay: 280ms;
 	}
 
@@ -263,17 +263,25 @@
 		}
 	}
 
-	@keyframes skip-intro-reveal {
+	@keyframes skip-intro-awaken {
 		from {
 			opacity: 0;
-			filter: blur(0.2rem);
-			transform: translateY(0.4rem);
+			filter: blur(0.65rem);
+			transform: translateY(0.65rem) scale(0.995);
+			text-shadow: 0 0 1.5rem oklch(0.78 0.14 82 / 45%);
+		}
+
+		60% {
+			opacity: 1;
+			filter: blur(0.04rem);
+			text-shadow: 0 0 0.7rem oklch(0.78 0.14 82 / 16%);
 		}
 
 		to {
 			opacity: 1;
 			filter: blur(0);
-			transform: translateY(0);
+			transform: translateY(0) scale(1);
+			text-shadow: 0 0 0 transparent;
 		}
 	}
 

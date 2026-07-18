@@ -31,7 +31,7 @@
 	}
 
 	.project-skip-reveal {
-		animation: project-skip-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: project-skip-rise 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
 		animation-delay: var(--project-reveal-delay);
 	}
 
@@ -52,8 +52,8 @@
 	@keyframes project-skip-rise {
 		from {
 			opacity: 0;
-			filter: blur(0.2rem);
-			transform: translateY(1.25rem);
+			filter: blur(0.3rem);
+			transform: translateY(2.5rem);
 		}
 
 		to {
