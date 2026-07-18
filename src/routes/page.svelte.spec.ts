@@ -43,6 +43,11 @@ describe('/+page.svelte', () => {
 		expect(main?.dataset.introActive).toBe('false');
 		expect(document.querySelector('.play-home-intro')).toBeNull();
 		expect(document.querySelector('.play-skip-sequence')).not.toBeNull();
-		expect(document.querySelector('.project-skip-reveal')).not.toBeNull();
+		const projectHeading = document.querySelector('.play-skip-projects');
+		const firstProject = document.querySelector('.project-skip-reveal');
+		expect(projectHeading).not.toBeNull();
+		expect(firstProject).not.toBeNull();
+		expect(getComputedStyle(projectHeading as Element).animationDelay).toBe('0.54s');
+		expect(getComputedStyle(firstProject as Element).animationDelay).toBe('1.08s');
 	});
 });

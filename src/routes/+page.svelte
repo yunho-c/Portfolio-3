@@ -154,7 +154,7 @@
 		projects={featuredProjects}
 		reveal={playIntro || playSkipSequence}
 		revealVariant={playSkipSequence ? 'skip' : 'full'}
-		revealDelay={playSkipSequence ? 360 : 13640}
+		revealDelay={playSkipSequence ? 1080 : 13640}
 		revealInterval={220}
 	/>
 </div>
@@ -177,7 +177,7 @@
 
 	.intro-line.play-skip-projects {
 		animation: skip-intro-awaken 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
-		animation-delay: 280ms;
+		animation-delay: 540ms;
 	}
 
 	.intro-panel {
