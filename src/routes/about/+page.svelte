@@ -14,7 +14,7 @@
 <main class="min-h-screen bg-background">
 	<article class="mx-auto max-w-[920px] px-5 py-16 sm:px-6 sm:py-24">
 		<header class="about-reveal border-b border-border pb-16 sm:pb-20" style="--reveal-delay: 80ms">
-			<div>
+			<div class="mx-auto max-w-3xl">
 				<p class="mb-5 text-xs font-semibold tracking-[0.24em] text-muted-foreground uppercase">
 					About / 소개
 				</p>
@@ -25,7 +25,9 @@
 				</h1>
 			</div>
 
-			<div class="mt-12 max-w-3xl space-y-6 text-lg leading-relaxed text-foreground/90 sm:text-xl">
+			<div
+				class="mx-auto mt-12 max-w-3xl space-y-6 text-lg leading-relaxed text-foreground/90 sm:text-xl"
+			>
 				<p>
 					My name is Yunho—or <span lang="ko" class="font-medium text-foreground">조윤호</span> in
 					Korean.
@@ -42,11 +44,13 @@
 		</header>
 
 		<div
-			class="prose prose-zinc prose-lg dark:prose-invert max-w-3xl pt-14 sm:pt-16 prose-headings:tracking-tight prose-h2:mb-4 prose-a:text-foreground prose-a:decoration-muted-foreground/50 prose-a:underline-offset-4"
+			class="prose prose-zinc prose-lg sm:prose-xl dark:prose-invert mx-auto max-w-3xl pt-14 sm:pt-16 prose-headings:tracking-tight prose-h2:mb-4 prose-p:leading-relaxed prose-p:text-foreground/90 prose-li:leading-relaxed prose-li:text-foreground/90 prose-a:text-foreground prose-a:decoration-muted-foreground/50 prose-a:underline-offset-4"
 		>
 			<section>
 				<div class="not-prose flex items-center justify-between gap-4">
-					<h2 class="text-3xl leading-tight font-bold tracking-tight text-foreground">Background</h2>
+					<h2 class="text-3xl leading-tight font-bold tracking-tight text-foreground sm:text-4xl">
+						Background
+					</h2>
 					<Button
 						href={asset('/resume.pdf')}
 						target="_blank"
@@ -59,23 +63,42 @@
 					</Button>
 				</div>
 				<p class="mt-4">
-					I am a generalist with diverse interests—and I love delving into unfamiliar fields
-					within engineering.
+					I am a generalist with diverse interests—and love delving into unfamiliar fields within
+					engineering.
 				</p>
 
 				<p>My areas of expertise-ish are:</p>
 				<ul>
 					<li><strong>Perception</strong>, control, and motion planning for robotic systems</li>
-					<li>Inference optimization of machine learning models, especially for edge inference</li>
+					<li>Inference optimization of machine learning models (for edge inference)</li>
 					<li>
-						Building software in general: web, mobile, desktop, backend and databases, and
-						systems-level software
+						Building software in general (web, mobile, desktop, backend/database, systems-level)
 					</li>
 				</ul>
 
 				<p>My research interests are:</p>
 				<ul>
-					<li>TODO</li>
+					<li>
+						Applying computational approaches to new domains
+						<ul>
+							<li>Including traditional sciences, unobservable or subjective phenomena, and more</li>
+						</ul>
+					</li>
+					<li>
+						Utilizing joint information representations and test-time input augmentations to extend
+						the capabilities of large transformer models (e.g., LLMs)
+					</li>
+					<li>
+						Devising human-centered communication and control schemes by considering human
+						perceptual, cognitive, and motor characteristics
+					</li>
+					<li>
+						Utilizing large-scale unlabeled data (e.g., videos) for weak self-supervised learning of
+						joint/multimodal information representations
+						<ul>
+							<li>Including value functions, world-state perception and prediction, and more</li>
+						</ul>
+					</li>
 				</ul>
 			</section>
 
@@ -83,11 +106,24 @@
 
 			<section>
 				<h2>Links</h2>
-				<ul>
-					<li><a href={resolve('/experience')}>Experience</a></li>
-					<li>Coursework <span class="text-muted-foreground">(coming soon)</span></li>
-					<li>Blog <span class="text-muted-foreground">(coming soon)</span></li>
-				</ul>
+				<div class="not-prose grid gap-4 sm:grid-cols-3">
+					<a
+						href={resolve('/experience')}
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
+					>
+						Experience
+					</a>
+					<div
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground sm:text-xl dark:bg-gray-800"
+					>
+						Coursework
+					</div>
+					<div
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground sm:text-xl dark:bg-gray-800"
+					>
+						Blog
+					</div>
+				</div>
 			</section>
 
 			<hr />
@@ -95,8 +131,9 @@
 			<section>
 				<h2>🌠 I envision...</h2>
 				<p>
-					My life goal is to contribute to the world by working on things that deserve—but
-					fail to—catch the attention of industry.
+					My life goal is to tackle underserved problems (e.g., affordable and useful assistive
+					technology devices) and create solutions that directly improve individuals’ quality of
+					life.
 				</p>
 				<p>So far, I have encountered a few important topics that fit this description:</p>
 
@@ -149,27 +186,29 @@
 
 			<section>
 				<h2>Talk</h2>
-				<p>I am always open to a coffee chat! Send me an email at:</p>
-				<div
-					class="not-prose mt-4 flex flex-wrap items-center gap-1.5"
-					aria-label="Email address shown in image fragments"
-				>
-					<img
-						src={asset('/email/email-1.svg')}
-						alt="Email username"
-						class="email-fragment h-7 w-auto"
-					/>
-					<img
-						src={asset('/email/email-2.svg')}
-						alt="at sign"
-						class="email-fragment h-7 w-auto"
-					/>
-					<img
-						src={asset('/email/email-3.svg')}
-						alt="Email domain"
-						class="email-fragment h-7 w-auto"
-					/>
-				</div>
+				<p>
+					I am always open to a coffee chat! Send me an email at:
+					<span
+						class="not-prose ml-1.5 inline-flex flex-wrap items-center gap-1.5 align-middle"
+						aria-label="Email address shown in image fragments"
+					>
+						<img
+							src={asset('/email/email-1.svg')}
+							alt="Email username"
+							class="email-fragment h-7 w-auto"
+						/>
+						<img
+							src={asset('/email/email-2.svg')}
+							alt="at sign"
+							class="email-fragment h-7 w-auto"
+						/>
+						<img
+							src={asset('/email/email-3.svg')}
+							alt="Email domain"
+							class="email-fragment h-7 w-auto"
+						/>
+					</span>
+				</p>
 			</section>
 		</div>
 	</article>
