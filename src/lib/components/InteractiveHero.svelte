@@ -6,10 +6,11 @@
 	interface Props {
 		cells: HeroGridCell[][];
 		activationDelay?: number;
+		hoverIntentDelay?: number;
 		children: Snippet;
 	}
 
-	let { cells, activationDelay = 0, children }: Props = $props();
+	let { cells, activationDelay = 0, hoverIntentDelay = 0, children }: Props = $props();
 
 	let heroElement: HTMLElement;
 	let enabled = $state(false);
@@ -22,6 +23,9 @@
 	let transitionMs = $state(480);
 	let gridVisible = $state(false);
 	let interactionSupported = $state(false);
+	let pointerInside = $state(false);
+	let hoverIntentSatisfied = $state(false);
+	let hoveredCell = $state<HeroGridCell | null>(null);
 	let transitionInProgress = false;
 	let queuedCell: HeroGridCell | null = null;
 
@@ -42,6 +46,24 @@
 		const timer = setTimeout(() => {
 			enabled = true;
 		}, Math.max(0, activationDelay));
+
+		return () => clearTimeout(timer);
+	});
+
+	$effect(() => {
+		if (!enabled || !pointerInside || hoverIntentSatisfied) return;
+
+		// Gate only the initial hero entry; moving between cells must not restart the intent clock.
+		const timer = setTimeout(() => {
+			hoverIntentSatisfied = true;
+			const cell = hoveredCell;
+			if (!cell || cell.id === activeCell?.id) return;
+
+			if (leaveTimer) clearTimeout(leaveTimer);
+			if (dwellTimer) clearTimeout(dwellTimer);
+			candidateId = null;
+			showCell(cell);
+		}, Math.max(0, hoverIntentDelay));
 
 		return () => clearTimeout(timer);
 	});
@@ -85,18 +107,10 @@
 	}
 
 	function handlePointerMove(event: PointerEvent) {
-		if (!enabled || event.pointerType === 'touch' || rowCount === 0 || columnCount === 0) return;
+		const cell = trackPointerCell(event);
+		if (!cell || !enabled || !hoverIntentSatisfied) return;
 
 		if (leaveTimer) clearTimeout(leaveTimer);
-
-		const bounds = heroElement.getBoundingClientRect();
-		const relativeX = Math.min(Math.max(event.clientX - bounds.left, 0), bounds.width - 1);
-		const relativeY = Math.min(Math.max(event.clientY - bounds.top, 0), bounds.height - 1);
-		const column = Math.min(Math.floor((relativeX / bounds.width) * columnCount), columnCount - 1);
-		const row = Math.min(Math.floor((relativeY / bounds.height) * rowCount), rowCount - 1);
-		const cell = cells[row]?.[column];
-
-		if (!cell) return;
 		if (cell.id === activeCell?.id) {
 			candidateId = null;
 			if (dwellTimer) clearTimeout(dwellTimer);
@@ -113,7 +127,14 @@
 		}, cell.dwellMs);
 	}
 
+	function handlePointerEnter(event: PointerEvent) {
+		trackPointerCell(event);
+	}
+
 	function handlePointerLeave() {
+		pointerInside = false;
+		hoverIntentSatisfied = false;
+		hoveredCell = null;
 		candidateId = null;
 		if (dwellTimer) clearTimeout(dwellTimer);
 
@@ -122,6 +143,19 @@
 				clearActiveCell();
 			}, 180);
 		}
+	}
+
+	function trackPointerCell(event: PointerEvent) {
+		if (event.pointerType === 'touch' || rowCount === 0 || columnCount === 0) return null;
+
+		pointerInside = true;
+		const bounds = heroElement.getBoundingClientRect();
+		const relativeX = Math.min(Math.max(event.clientX - bounds.left, 0), bounds.width - 1);
+		const relativeY = Math.min(Math.max(event.clientY - bounds.top, 0), bounds.height - 1);
+		const column = Math.min(Math.floor((relativeX / bounds.width) * columnCount), columnCount - 1);
+		const row = Math.min(Math.floor((relativeY / bounds.height) * rowCount), rowCount - 1);
+		hoveredCell = cells[row]?.[column] ?? null;
+		return hoveredCell;
 	}
 
 	function showCell(cell: HeroGridCell) {
@@ -197,6 +231,7 @@
 	class:collage-active={activeCell !== null}
 	role="presentation"
 	bind:this={heroElement}
+	onpointerenter={handlePointerEnter}
 	onpointermove={handlePointerMove}
 	onpointerleave={handlePointerLeave}
 >

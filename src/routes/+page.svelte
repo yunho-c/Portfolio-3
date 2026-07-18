@@ -78,7 +78,7 @@
 
 <svelte:window onpointerdown={handleIntroPointer} onkeydown={handleIntroKeydown} />
 
-<InteractiveHero cells={heroGridCells} activationDelay={playIntro ? 12040 : 0}>
+<InteractiveHero cells={heroGridCells} activationDelay={playIntro ? 12040 : 0} hoverIntentDelay={1000}>
 	<main
 		class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32"
 		class:intro-skip-out={skipPhase === 'out'}
