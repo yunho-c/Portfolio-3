@@ -1,10 +1,13 @@
 import { Client } from '@notionhq/client';
 import { NotionToMarkdown } from 'notion-to-md';
 import { env } from '$env/dynamic/private';
+import { renderNotionMediaBlock } from '$lib/notion-embeds';
 
 // Initialize the Notion client with a fallback empty string for dev environments without keys
 const notion = new Client({ auth: env.NOTION_API_KEY || '' });
 const n2m = new NotionToMarkdown({ notionClient: notion });
+n2m.setCustomTransformer('embed', renderNotionMediaBlock);
+n2m.setCustomTransformer('video', renderNotionMediaBlock);
 
 const ICON_MAP: Record<string, string> = {
 	'React': 'logos:react',

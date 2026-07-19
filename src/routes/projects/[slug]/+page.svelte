@@ -261,6 +261,54 @@
 		outline-offset: 3px;
 	}
 
+	:global(.project-embed) {
+		margin: 2.75rem 0;
+	}
+
+	:global(.project-embed--iframe) {
+		width: min(72rem, calc(100vw - 2rem));
+		margin-left: 50%;
+		transform: translateX(-50%);
+	}
+
+	:global(.project-embed__video),
+	:global(.project-embed__frame-shell) {
+		width: 100%;
+		border: 1px solid color-mix(in oklab, var(--border) 78%, var(--foreground) 22%);
+		border-radius: 0.75rem;
+		background: var(--muted);
+		box-shadow:
+			0 18px 44px rgb(0 0 0 / 0.1),
+			0 3px 10px rgb(0 0 0 / 0.06);
+	}
+
+	:global(.project-embed__video) {
+		display: block;
+		max-height: min(80svh, 52rem);
+		object-fit: contain;
+	}
+
+	:global(.project-embed__frame-shell) {
+		height: clamp(28rem, 75svh, 42rem);
+		overflow: hidden;
+	}
+
+	:global(.project-embed__iframe) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border: 0;
+		background: var(--background);
+	}
+
+	:global(.project-embed__caption) {
+		margin-top: 0.7rem;
+		color: var(--muted-foreground);
+		font-size: 0.8125rem;
+		line-height: 1.45;
+		text-align: center;
+	}
+
 	.project-hover-tooltip {
 		position: fixed;
 		z-index: 60;
