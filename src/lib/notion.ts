@@ -1,16 +1,37 @@
 import { Client } from '@notionhq/client';
 import { NotionToMarkdown } from 'notion-to-md';
 import { env } from '$env/dynamic/private';
-import { renderNotionMediaBlock } from '$lib/notion-embeds';
+import { getNotionMediaItem, renderProjectMediaItem } from '$lib/notion-embeds';
 import { normalizeNotionFoldables } from '$lib/notion-foldables';
 import { filterNotionHiddenBlocks } from '$lib/notion-hidden-blocks';
+import {
+	extractNotionGalleries,
+	type ProjectGallery,
+	type ProjectGalleryItem
+} from '$lib/project-gallery';
 
 // Initialize the Notion client with a fallback empty string for dev environments without keys
 const notion = new Client({ auth: env.NOTION_API_KEY || '' });
-const n2m = new NotionToMarkdown({ notionClient: notion });
-n2m.setCustomTransformer('image', renderNotionMediaBlock);
-n2m.setCustomTransformer('embed', renderNotionMediaBlock);
-n2m.setCustomTransformer('video', renderNotionMediaBlock);
+
+function createNotionMarkdownRenderer(): {
+	n2m: NotionToMarkdown;
+	mediaByBlockId: Map<string, ProjectGalleryItem>;
+} {
+	const mediaByBlockId = new Map<string, ProjectGalleryItem>();
+	const n2m = new NotionToMarkdown({ notionClient: notion });
+	const renderMedia = (block: unknown): string => {
+		const item = getNotionMediaItem(block);
+		const blockId = (block as { id?: string }).id;
+		if (item && blockId) mediaByBlockId.set(blockId, item);
+		return renderProjectMediaItem(item);
+	};
+
+	n2m.setCustomTransformer('image', renderMedia);
+	n2m.setCustomTransformer('embed', renderMedia);
+	n2m.setCustomTransformer('video', renderMedia);
+
+	return { n2m, mediaByBlockId };
+}
 
 const ICON_MAP: Record<string, string> = {
 	'React': 'logos:react',
@@ -107,7 +128,7 @@ export async function getProjects(): Promise<Project[]> {
 			const name = page.properties.Name?.title[0]?.plain_text || 'Untitled';
 			const color = THUMBNAIL_COLORS[name.length % THUMBNAIL_COLORS.length];
 			const placeholder = `https://placehold.co/600x400/${color}/white?text=${encodeURIComponent(name)}`;
-			
+
 			return {
 				id: page.id,
 				slug: slugify(name),
@@ -127,10 +148,17 @@ export async function getProjects(): Promise<Project[]> {
 	}
 }
 
-export async function getProjectBySlug(slug: string): Promise<{ project: Project; content: string } | null> {
-    if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) {
-        return { project: getMockProjects()[0], content: '# Mock Project\n\nPlease add Notion API keys to your `.env` file to fetch real data.' };
-    }
+export async function getProjectBySlug(
+	slug: string
+): Promise<{ project: Project; content: string; galleries: ProjectGallery[] } | null> {
+	if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) {
+		return {
+			project: getMockProjects()[0],
+			content:
+				'# Mock Project\n\nPlease add Notion API keys to your `.env` file to fetch real data.',
+			galleries: []
+		};
+	}
 
 	// Fetch all projects to find the matching slug
 	const response = await notion.databases.query({
@@ -148,7 +176,7 @@ export async function getProjectBySlug(slug: string): Promise<{ project: Project
 	const name = page.properties.Name?.title[0]?.plain_text || 'Untitled';
 	const color = THUMBNAIL_COLORS[name.length % THUMBNAIL_COLORS.length];
 	const placeholder = `https://placehold.co/600x400/${color}/white?text=${encodeURIComponent(name)}`;
-	
+
 	const project: Project = {
 		id: page.id,
 		slug,
@@ -156,21 +184,24 @@ export async function getProjectBySlug(slug: string): Promise<{ project: Project
 		featured: page.properties.Featured?.checkbox || false,
 		thumbnail: page.properties.Thumbnail?.url || placeholder,
 		description: getProjectDescription(page),
-		tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({ 
-			name: tag.name, 
-			icon: ICON_MAP[tag.name] || '' 
+		tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({
+			name: tag.name,
+			icon: ICON_MAP[tag.name] || ''
 		}))
 	};
 
 	// Convert the Notion Block AST into raw Markdown!
-	const mdblocks = normalizeNotionFoldables(
+	const { n2m, mediaByBlockId } = createNotionMarkdownRenderer();
+	const normalizedBlocks = normalizeNotionFoldables(
 		filterNotionHiddenBlocks(await n2m.pageToMarkdown(page.id))
 	);
-	const content = n2m.toMarkdownString(mdblocks);
+	const { blocks, galleries } = extractNotionGalleries(normalizedBlocks, mediaByBlockId);
+	const content = n2m.toMarkdownString(blocks);
 
 	return {
 		project,
-		content: content.parent || ''
+		content: content.parent || '',
+		galleries
 	};
 }
 

@@ -2,6 +2,7 @@ import { page } from '@vitest/browser/context';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import { renderNotionMediaBlock } from '$lib/notion-embeds';
+import { createProjectGallerySentinel, type ProjectGallery } from '$lib/project-gallery';
 import Page from './+page.svelte';
 
 const project = {
@@ -19,6 +20,7 @@ describe('/projects/[slug]/+page.svelte', () => {
 		render(Page, {
 			data: {
 				project,
+				galleries: [],
 				content: 'Try an [image codec]{hover: like AVIF and JPEG-XL}.'
 			}
 		});
@@ -35,6 +37,7 @@ describe('/projects/[slug]/+page.svelte', () => {
 		render(Page, {
 			data: {
 				project,
+				galleries: [],
 				content: 'Try an [image codec]{hover: like AVIF and JPEG-XL}.'
 			}
 		});
@@ -50,6 +53,7 @@ describe('/projects/[slug]/+page.svelte', () => {
 		render(Page, {
 			data: {
 				project,
+				galleries: [],
 				content: `<details>
 <summary>
 
@@ -88,6 +92,7 @@ Hidden project context.
 		render(Page, {
 			data: {
 				project,
+				galleries: [],
 				content: `Preamble.
 
 ## First section
@@ -143,6 +148,7 @@ Second body.`
 		render(Page, {
 			data: {
 				project,
+				galleries: [],
 				content: `${image}\n\n${video}\n\n${iframe}`
 			}
 		});
@@ -171,5 +177,80 @@ Second body.`
 		await expect.element(page.getByText('Image comparison', { exact: true })).toBeInTheDocument();
 		await expect.element(page.getByText('Video demo', { exact: true })).toBeInTheDocument();
 		await expect.element(page.getByText('Interactive demo', { exact: true })).toBeInTheDocument();
+	});
+
+	it('renders a mixed-media gallery between Markdown segments and supports thumbnail navigation', async () => {
+		const gallery: ProjectGallery = {
+			id: 'system-demo',
+			title: 'System demo',
+			items: [
+				{
+					kind: 'image',
+					src: 'https://placehold.co/800x450/png',
+					label: 'Architecture overview',
+					caption: 'Architecture overview'
+				},
+				{
+					kind: 'iframe',
+					src: 'https://example.com/demo/',
+					label: 'Interactive demo',
+					caption: 'Interactive demo',
+					host: 'example.com'
+				}
+			]
+		};
+
+		render(Page, {
+			data: {
+				project,
+				galleries: [gallery],
+				content: `## Before\n\nIntro.\n\n${createProjectGallerySentinel(gallery.id)}\n\n## After\n\nOutro.`
+			}
+		});
+
+		await expect.element(page.getByRole('region', { name: 'System demo' })).toBeInTheDocument();
+		await page.getByRole('button', { name: 'Pause gallery autoplay' }).click();
+		await expect.element(page.getByRole('heading', { name: 'Before' })).toBeInTheDocument();
+		await expect.element(page.getByRole('heading', { name: 'After' })).toBeInTheDocument();
+		await expect
+			.element(page.getByText('Architecture overview', { exact: true }))
+			.toBeInTheDocument();
+		await expect.element(page.getByText('1 / 2')).toBeInTheDocument();
+
+		const secondThumbnail = page.getByRole('button', { name: 'Show slide 2: Interactive demo' });
+		await secondThumbnail.click();
+
+		await expect.element(secondThumbnail).toHaveAttribute('aria-current', 'true');
+		await expect.element(page.getByText('2 / 2')).toBeInTheDocument();
+		await expect.element(page.getByText('Interactive demo', { exact: true })).toBeInTheDocument();
+	});
+
+	it('renders a single gallery item without carousel navigation or autoplay controls', async () => {
+		const gallery: ProjectGallery = {
+			id: 'single-image',
+			items: [
+				{
+					kind: 'image',
+					src: 'https://placehold.co/800x450/png',
+					label: 'Single gallery image'
+				}
+			]
+		};
+
+		render(Page, {
+			data: {
+				project,
+				galleries: [gallery],
+				content: createProjectGallerySentinel(gallery.id)
+			}
+		});
+
+		await expect
+			.element(page.getByRole('img', { name: 'Single gallery image' }))
+			.toBeInTheDocument();
+		await expect.element(page.getByRole('button', { name: 'Next slide' })).not.toBeInTheDocument();
+		await expect
+			.element(page.getByRole('button', { name: 'Pause gallery autoplay' }))
+			.not.toBeInTheDocument();
 	});
 });

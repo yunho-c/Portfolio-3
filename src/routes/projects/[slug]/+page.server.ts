@@ -16,5 +16,5 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (!result) {
 		throw error(404, 'Project not found');
 	}
-	return { project: result.project, content: result.content };
+	return { project: result.project, content: result.content, galleries: result.galleries };
 };

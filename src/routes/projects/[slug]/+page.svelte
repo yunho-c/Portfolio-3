@@ -2,6 +2,7 @@
 	import { tick } from 'svelte';
 	import type { PageData } from './$types';
 	import Icon from '@iconify/svelte';
+	import MediaGallery from '$lib/components/MediaGallery.svelte';
 	import ProjectTableOfContents from '$lib/components/ProjectTableOfContents.svelte';
 	import { renderProjectDocument } from '$lib/project-markdown';
 
@@ -10,9 +11,9 @@
 	const TOOLTIP_GAP = 10;
 
 	export let data: PageData;
-	$: ({ project, content } = data);
-	$: renderedDocument = renderProjectDocument(content || '');
-	$: ({ html: htmlContent, headings } = renderedDocument);
+	$: ({ project, content, galleries } = data);
+	$: renderedDocument = renderProjectDocument(content || '', galleries || []);
+	$: ({ segments, headings } = renderedDocument);
 
 	let proseRoot: HTMLDivElement;
 	let tooltipElement: HTMLDivElement;
@@ -247,7 +248,7 @@
 		};
 	}
 
-	$: if (proseRoot && htmlContent) {
+	$: if (proseRoot && segments) {
 		void tick().then(scheduleVisibleSectionsUpdate);
 	}
 </script>
@@ -307,7 +308,13 @@
 			use:registerHoverNoteEvents
 			class="project-main-column project-prose prose prose-zinc dark:prose-invert max-w-none prose-img:rounded-xl"
 		>
-			{@html htmlContent}
+			{#each segments as segment, index (`${segment.kind}-${index}`)}
+				{#if segment.kind === 'html'}
+					{@html segment.html}
+				{:else}
+					<MediaGallery gallery={segment.gallery} />
+				{/if}
+			{/each}
 		</div>
 	</article>
 </main>

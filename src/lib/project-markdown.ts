@@ -1,4 +1,5 @@
 import { Marked } from 'marked';
+import { PROJECT_GALLERY_SENTINEL_PREFIX, type ProjectGallery } from './project-gallery';
 
 export interface ProjectHeading {
 	depth: number;
@@ -9,7 +10,11 @@ export interface ProjectHeading {
 export interface ProjectDocument {
 	html: string;
 	headings: ProjectHeading[];
+	segments: ProjectDocumentSegment[];
 }
+
+export type ProjectDocumentSegment =
+	{ kind: 'html'; html: string } | { kind: 'gallery'; gallery: ProjectGallery };
 
 interface HoverNoteToken {
 	type: 'projectHoverNote';
@@ -112,12 +117,58 @@ function createProjectMarkdown(headings: ProjectHeading[]): Marked {
 	});
 }
 
+const GALLERY_SENTINEL = new RegExp(`<!--${PROJECT_GALLERY_SENTINEL_PREFIX}([^>]+)-->`, 'g');
+
 /** Render project Markdown and collect its h2-h4 table-of-contents entries. */
-export function renderProjectDocument(markdown: string): ProjectDocument {
+export function renderProjectDocument(
+	markdown: string,
+	galleries: ProjectGallery[] = []
+): ProjectDocument {
 	const headings: ProjectHeading[] = [];
 	const renderer = createProjectMarkdown(headings);
-	const html = renderer.parse(markdown, { async: false });
-	return { html, headings };
+	const galleryById = new Map(galleries.map((gallery) => [gallery.id, gallery]));
+	const segments: ProjectDocumentSegment[] = [];
+	let cursor = 0;
+
+	for (const match of markdown.matchAll(GALLERY_SENTINEL)) {
+		const index = match.index ?? 0;
+		const before = markdown.slice(cursor, index);
+		if (before.trim()) {
+			segments.push({ kind: 'html', html: renderer.parse(before, { async: false }) });
+		}
+
+		const encodedId = match[1];
+		let id = encodedId;
+		try {
+			id = decodeURIComponent(encodedId);
+		} catch {
+			// Keep a malformed marker inert instead of failing the whole project page.
+		}
+
+		const gallery = galleryById.get(id);
+		if (gallery) {
+			segments.push({ kind: 'gallery', gallery });
+		} else {
+			segments.push({ kind: 'html', html: renderer.parse(match[0], { async: false }) });
+		}
+
+		cursor = index + match[0].length;
+	}
+
+	const after = markdown.slice(cursor);
+	if (after.trim() || segments.length === 0) {
+		segments.push({ kind: 'html', html: renderer.parse(after, { async: false }) });
+	}
+
+	const html = segments
+		.map((segment) =>
+			segment.kind === 'html'
+				? segment.html
+				: `<!--${PROJECT_GALLERY_SENTINEL_PREFIX}${encodeURIComponent(segment.gallery.id)}-->`
+		)
+		.join('');
+
+	return { html, headings, segments };
 }
 
 /** Render project Markdown with one-line `[label]{hover: note}` annotations. */

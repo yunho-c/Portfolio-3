@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderNotionMediaBlock } from './notion-embeds';
+import { getNotionMediaItem, renderNotionMediaBlock } from './notion-embeds';
 
 describe('renderNotionMediaBlock', () => {
 	it('renders Notion images as centered captioned figures', () => {
@@ -89,5 +89,33 @@ describe('renderNotionMediaBlock', () => {
 		expect(escaped).toContain('Demo &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;');
 		expect(escaped).not.toContain('<script>');
 		expect(rejected).toBe('');
+	});
+
+	it('normalizes media into serializable gallery items', () => {
+		expect(
+			getNotionMediaItem({
+				type: 'embed',
+				embed: {
+					url: 'https://demos.yunhocho.com/robot/',
+					caption: [{ plain_text: 'Robot demo' }]
+				}
+			})
+		).toEqual({
+			kind: 'iframe',
+			src: 'https://demos.yunhocho.com/robot/',
+			label: 'Robot demo',
+			caption: 'Robot demo',
+			host: 'demos.yunhocho.com'
+		});
+
+		expect(
+			getNotionMediaItem({
+				type: 'image',
+				image: {
+					type: 'external',
+					external: { url: 'http://example.com/insecure.png' }
+				}
+			})
+		).toBeNull();
 	});
 });

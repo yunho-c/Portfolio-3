@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderProjectDocument, renderProjectMarkdown } from './project-markdown';
+import { createProjectGallerySentinel, type ProjectGallery } from './project-gallery';
 
 describe('renderProjectMarkdown', () => {
 	it('renders hover notes alongside ordinary Markdown', () => {
@@ -72,5 +73,36 @@ Hidden context.
 
 		expect(document.headings).toEqual([{ depth: 3, slug: 'background', text: 'Background' }]);
 		expect(document.html).toContain('<summary><h3 id="background">Background</h3>');
+	});
+
+	it('renders galleries as Svelte-ready segments without disrupting heading order', () => {
+		const gallery: ProjectGallery = {
+			id: 'demo-gallery',
+			title: 'System demo',
+			items: [
+				{
+					kind: 'image',
+					src: 'https://example.com/image.png',
+					label: 'Demo image'
+				}
+			]
+		};
+		const document = renderProjectDocument(
+			`## Before\n\nBody.\n\n${createProjectGallerySentinel(gallery.id)}\n\n## After\n\nMore body.`,
+			[gallery]
+		);
+
+		expect(document.segments).toHaveLength(3);
+		expect(document.segments[0]).toEqual(
+			expect.objectContaining({ kind: 'html', html: expect.stringContaining('id="before"') })
+		);
+		expect(document.segments[1]).toEqual({ kind: 'gallery', gallery });
+		expect(document.segments[2]).toEqual(
+			expect.objectContaining({ kind: 'html', html: expect.stringContaining('id="after"') })
+		);
+		expect(document.headings).toEqual([
+			{ depth: 2, slug: 'before', text: 'Before' },
+			{ depth: 2, slug: 'after', text: 'After' }
+		]);
 	});
 });

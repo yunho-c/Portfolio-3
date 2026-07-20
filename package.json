@@ -31,6 +31,7 @@
 		"@vitest/browser": "^3.2.6",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
+		"embla-carousel-svelte": "^8.6.0",
 		"eslint": "^9.39.4",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.20.0",
