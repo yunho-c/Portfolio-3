@@ -11,15 +11,37 @@
 	let { children } = $props();
 
 	provideUiSession();
-	const uiPreferences = createUiPreferences();
+	const uiPreferences = $state(createUiPreferences());
 	provideUiPreferences(uiPreferences);
+
+	$effect(() => {
+		document.body.classList.toggle('experimental-fonts', uiPreferences.experimentalFonts);
+
+		return () => document.body.classList.remove('experimental-fonts');
+	});
+
+	function handlePreferencesKeydown(event: KeyboardEvent) {
+		if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+
+		const target = event.target;
+		if (
+			target instanceof HTMLElement &&
+			(target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+		) {
+			return;
+		}
+
+		if (event.key.toLowerCase() === 'f') {
+			uiPreferences.experimentalFonts = !uiPreferences.experimentalFonts;
+		}
+	}
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<svelte:body class:experimental-fonts={uiPreferences.experimentalFonts} />
+<svelte:window onkeydown={handlePreferencesKeydown} />
 
 <Header />
 

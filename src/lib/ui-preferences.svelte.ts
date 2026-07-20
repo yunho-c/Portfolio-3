@@ -4,14 +4,10 @@ export interface UiPreferences {
 	experimentalFonts: boolean;
 }
 
-export function createUiPreferences(
-	initial: Partial<UiPreferences> = {}
-): UiPreferences {
-	const preferences = $state({
+export function createUiPreferences(initial: Partial<UiPreferences> = {}): UiPreferences {
+	return {
 		experimentalFonts: initial.experimentalFonts ?? false
-	});
-
-	return preferences;
+	};
 }
 
 export const [useUiPreferences, provideUiPreferences] = createContext<UiPreferences>();
