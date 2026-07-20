@@ -9,7 +9,6 @@
 </script>
 
 <nav class="project-toc" aria-label="Table of contents">
-	<h2>Table of Contents</h2>
 	<ul>
 		{#each headings as heading}
 			<li
@@ -31,15 +30,6 @@
 		max-height: calc(100svh - 7rem);
 		overflow-y: auto;
 		scrollbar-width: thin;
-	}
-
-	h2 {
-		margin: 0 0 1rem;
-		color: var(--foreground);
-		font-size: 1rem;
-		font-weight: 700;
-		line-height: 2;
-		text-transform: uppercase;
 	}
 
 	ul {
@@ -84,13 +74,6 @@
 			max-height: none;
 			margin-bottom: 3rem;
 			overflow: visible;
-		}
-
-		h2 {
-			margin-bottom: 1rem;
-			font-size: 1.5rem;
-			line-height: 1.25;
-			text-transform: none;
 		}
 
 		li {
