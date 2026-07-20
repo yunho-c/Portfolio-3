@@ -76,6 +76,44 @@ Hidden project context.
 
 		expect(details?.open).toBe(true);
 		await expect.element(page.getByText('Hidden project context.')).toBeVisible();
+
+		await page.getByRole('heading', { name: 'Background' }).click();
+		expect(details?.open).toBe(false);
+
+		await page.getByRole('link', { name: 'Background' }).click();
+		expect(details?.open).toBe(true);
+	});
+
+	it('builds a nested-depth TOC and marks visible sections as current', async () => {
+		render(Page, {
+			data: {
+				project,
+				content: `Preamble.
+
+## First section
+
+First body.
+
+### First detail
+
+Detail body.
+
+## Second section
+
+Second body.`
+			}
+		});
+
+		const navigation = page.getByRole('navigation', { name: 'Table of contents' });
+		const firstLink = page.getByRole('link', { name: 'First section' });
+		const detailLink = page.getByRole('link', { name: 'First detail' });
+
+		await expect.element(navigation).toBeInTheDocument();
+		await expect.element(firstLink).toHaveAttribute('href', '#first-section');
+		await expect.element(detailLink).toHaveAttribute('href', '#first-detail');
+		expect(detailLink.element().closest('li')?.getAttribute('aria-level')).toBe('2');
+		expect(document.querySelector('h2#first-section')?.textContent).toBe('First section');
+		await expect.element(firstLink).toHaveAttribute('aria-current', 'true');
 	});
 
 	it('renders responsive video and iframe figures from Notion blocks', async () => {

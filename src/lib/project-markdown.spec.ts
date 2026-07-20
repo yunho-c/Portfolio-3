@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderProjectMarkdown } from './project-markdown';
+import { renderProjectDocument, renderProjectMarkdown } from './project-markdown';
 
 describe('renderProjectMarkdown', () => {
 	it('renders hover notes alongside ordinary Markdown', () => {
@@ -33,5 +33,44 @@ describe('renderProjectMarkdown', () => {
 		expect(html).toContain('[empty]{hover: }');
 		expect(html).toContain('[unfinished]{hover: note');
 		expect(html).not.toContain('class="project-hover-note"');
+	});
+
+	it('collects h2-h4 headings with stable, deduplicated anchor IDs', () => {
+		const document = renderProjectDocument(`# Project title
+
+## Background & Motivation
+
+### **Details**
+
+## Background & Motivation
+
+##### Not in the TOC`);
+
+		expect(document.headings).toEqual([
+			{ depth: 2, slug: 'background-motivation', text: 'Background & Motivation' },
+			{ depth: 3, slug: 'details', text: 'Details' },
+			{ depth: 2, slug: 'background-motivation-1', text: 'Background & Motivation' }
+		]);
+		expect(document.html).toContain('<h1 id="project-title">Project title</h1>');
+		expect(document.html).toContain(
+			'<h2 id="background-motivation-1">Background &amp; Motivation</h2>'
+		);
+		expect(document.html).toContain('<h5 id="not-in-the-toc">Not in the TOC</h5>');
+	});
+
+	it('adds a TOC anchor to a semantic heading inside a foldable summary', () => {
+		const document = renderProjectDocument(`<details>
+<summary>
+
+### Background
+
+</summary>
+
+Hidden context.
+
+</details>`);
+
+		expect(document.headings).toEqual([{ depth: 3, slug: 'background', text: 'Background' }]);
+		expect(document.html).toContain('<summary><h3 id="background">Background</h3>');
 	});
 });

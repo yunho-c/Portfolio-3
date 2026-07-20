@@ -85,7 +85,7 @@ describe('normalizeNotionFoldables', () => {
 		const html = renderProjectMarkdown(markdown);
 
 		expect(html).toContain('<details>');
-		expect(html).toContain('<summary><h3><strong>Background</strong></h3>');
+		expect(html).toContain('<summary><h3 id="background"><strong>Background</strong></h3>');
 		expect(html).toContain('<p>First hidden paragraph.</p>');
 		expect(html).toContain('<p>Second hidden paragraph.</p>');
 		expect(html).not.toContain('<pre><code>');

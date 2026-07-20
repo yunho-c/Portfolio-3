@@ -2,7 +2,8 @@
 	import { tick } from 'svelte';
 	import type { PageData } from './$types';
 	import Icon from '@iconify/svelte';
-	import { renderProjectMarkdown } from '$lib/project-markdown';
+	import ProjectTableOfContents from '$lib/components/ProjectTableOfContents.svelte';
+	import { renderProjectDocument } from '$lib/project-markdown';
 
 	const TOOLTIP_ID = 'project-hover-tooltip';
 	const TOOLTIP_MARGIN = 12;
@@ -10,7 +11,8 @@
 
 	export let data: PageData;
 	$: ({ project, content } = data);
-	$: htmlContent = renderProjectMarkdown(content || '');
+	$: renderedDocument = renderProjectDocument(content || '');
+	$: ({ html: htmlContent, headings } = renderedDocument);
 
 	let proseRoot: HTMLDivElement;
 	let tooltipElement: HTMLDivElement;
@@ -24,6 +26,8 @@
 	let tooltipTop = 0;
 	let tooltipArrowLeft = 0;
 	let tooltipPlacement: 'top' | 'bottom' = 'top';
+	let activeHeadingSlugs: string[] = [];
+	let visibilityFrame: number | null = null;
 
 	function getHoverNoteTrigger(target: EventTarget | null): HTMLButtonElement | null {
 		if (!(target instanceof Element)) return null;
@@ -121,7 +125,12 @@
 
 	function handleTriggerClick(event: MouseEvent) {
 		const trigger = getHoverNoteTrigger(event.target);
-		if (!trigger) return;
+		if (!trigger) {
+			if (event.target instanceof Element && event.target.closest('summary')) {
+				scheduleVisibleSectionsUpdate();
+			}
+			return;
+		}
 
 		if (activeTrigger === trigger && tooltipPinned) {
 			hideTooltip();
@@ -143,6 +152,77 @@
 
 	function handleViewportChange() {
 		if (activeTrigger && tooltipOpen) positionTooltip(activeTrigger);
+		scheduleVisibleSectionsUpdate();
+	}
+
+	function updateVisibleSections() {
+		visibilityFrame = null;
+		if (!proseRoot || headings.length === 0) {
+			activeHeadingSlugs = [];
+			return;
+		}
+
+		const renderedHeadings = headings
+			.map((heading) => ({
+				heading,
+				element: proseRoot.querySelector<HTMLElement>(`#${CSS.escape(heading.slug)}`)
+			}))
+			.filter(
+				(entry): entry is { heading: (typeof headings)[number]; element: HTMLElement } =>
+					Boolean(entry.element?.getClientRects().length)
+			);
+		const proseBottom = proseRoot.getBoundingClientRect().bottom;
+		const nextActiveSlugs: string[] = [];
+
+		renderedHeadings.forEach((entry, index) => {
+			const nextPeer = renderedHeadings
+				.slice(index + 1)
+				.find((candidate) => candidate.heading.depth <= entry.heading.depth);
+			const sectionTop = entry.element.getBoundingClientRect().top;
+			const sectionBottom = nextPeer?.element.getBoundingClientRect().top ?? proseBottom;
+
+			if (sectionTop < window.innerHeight && sectionBottom > 0) {
+				nextActiveSlugs.push(entry.heading.slug);
+			}
+		});
+
+		if (nextActiveSlugs.join('\n') !== activeHeadingSlugs.join('\n')) {
+			activeHeadingSlugs = nextActiveSlugs;
+		}
+	}
+
+	function scheduleVisibleSectionsUpdate() {
+		if (visibilityFrame !== null) return;
+		visibilityFrame = requestAnimationFrame(updateVisibleSections);
+	}
+
+	function handleTocNavigation(event: MouseEvent) {
+		if (!(event.target instanceof Element)) return;
+
+		const anchor = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
+		if (!anchor || !proseRoot) return;
+
+		const slug = decodeURIComponent(anchor.hash.slice(1));
+		const target = proseRoot.querySelector<HTMLElement>(`#${CSS.escape(slug)}`);
+		if (!target) return;
+
+		let foldedAncestor = target.closest<HTMLDetailsElement>('details');
+		while (foldedAncestor) {
+			foldedAncestor.open = true;
+			foldedAncestor = foldedAncestor.parentElement?.closest<HTMLDetailsElement>('details') ?? null;
+		}
+
+		scheduleVisibleSectionsUpdate();
+	}
+
+	function registerTocNavigation(node: HTMLElement) {
+		node.addEventListener('click', handleTocNavigation);
+
+		return {
+			destroy() {
+				node.removeEventListener('click', handleTocNavigation);
+			}
+		};
 	}
 
 	function registerHoverNoteEvents(node: HTMLDivElement) {
@@ -152,6 +232,7 @@
 		node.addEventListener('focusin', handleFocusIn);
 		node.addEventListener('focusout', handleFocusOut);
 		node.addEventListener('click', handleTriggerClick);
+		scheduleVisibleSectionsUpdate();
 
 		return {
 			destroy() {
@@ -161,8 +242,13 @@
 				node.removeEventListener('focusout', handleFocusOut);
 				node.removeEventListener('click', handleTriggerClick);
 				activeTrigger?.removeAttribute('aria-describedby');
+				if (visibilityFrame !== null) cancelAnimationFrame(visibilityFrame);
 			}
 		};
+	}
+
+	$: if (proseRoot && htmlContent) {
+		void tick().then(scheduleVisibleSectionsUpdate);
 	}
 </script>
 
@@ -178,12 +264,15 @@
 </svelte:head>
 
 <main class="min-h-screen bg-background">
-	<article class="mx-auto max-w-[768px] px-5 py-16 sm:px-6 sm:py-24">
-		<a href="/projects" class="mb-8 inline-block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+	<article
+		class="project-article mx-auto grid px-5 py-16 sm:px-6 sm:py-24"
+		class:project-article--with-toc={headings.length > 0}
+	>
+		<a href="/projects" class="project-main-column mb-8 inline-block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
 			← Back to Projects
 		</a>
 
-		<header class="mb-12">
+		<header class="project-main-column mb-12">
 			<h1 class="text-4xl font-bold tracking-tight sm:text-5xl text-foreground">{project.name}</h1>
 			{#if project.tags && project.tags.length > 0}
 				<div class="mt-6 flex flex-wrap gap-2">
@@ -201,16 +290,22 @@
 		
 		{#if project.thumbnail}
 			{#if project.thumbnail.match(/\.(mp4|webm|ogg|mov)$/i)}
-				<video src={project.thumbnail} autoplay loop muted playsinline class="mb-16 w-full rounded-xl object-cover shadow-sm border border-border/50 max-h-[400px]"></video>
+				<video src={project.thumbnail} autoplay loop muted playsinline class="project-main-column mb-16 w-full rounded-xl object-cover shadow-sm border border-border/50 max-h-[400px]"></video>
 			{:else}
-				<img src={project.thumbnail} alt={project.name} class="mb-16 w-full rounded-xl object-cover shadow-sm border border-border/50 max-h-[400px]" />
+				<img src={project.thumbnail} alt={project.name} class="project-main-column mb-16 w-full rounded-xl object-cover shadow-sm border border-border/50 max-h-[400px]" />
 			{/if}
+		{/if}
+
+		{#if headings.length > 0}
+			<aside class="project-toc-column" use:registerTocNavigation>
+				<ProjectTableOfContents {headings} activeSlugs={activeHeadingSlugs} />
+			</aside>
 		{/if}
 
 		<!-- Apply Tailwind Typography 'prose' to auto-style the markdown HTML -->
 		<div
 			use:registerHoverNoteEvents
-			class="prose prose-zinc dark:prose-invert max-w-none prose-img:rounded-xl"
+			class="project-main-column project-prose prose prose-zinc dark:prose-invert max-w-none prose-img:rounded-xl"
 		>
 			{@html htmlContent}
 		</div>
@@ -232,6 +327,25 @@
 {/if}
 
 <style>
+	:global(html) {
+		scroll-behavior: smooth;
+	}
+
+	.project-article {
+		width: 100%;
+		max-width: 48rem;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.project-main-column,
+	.project-toc-column {
+		min-width: 0;
+	}
+
+	:global(.project-prose :is(h2, h3, h4, h5, h6)[id]) {
+		scroll-margin-top: 5.5rem;
+	}
+
 	:global(.project-hover-note) {
 		appearance: none;
 		margin: 0;
@@ -443,6 +557,10 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		:global(html) {
+			scroll-behavior: auto;
+		}
+
 		:global(.project-hover-note) {
 			transition: none;
 		}
@@ -453,6 +571,30 @@
 
 		.project-hover-tooltip.positioned {
 			animation: none;
+		}
+	}
+
+	@media (min-width: 75rem) {
+		.project-article--with-toc {
+			max-width: none;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 45rem) minmax(0, 1fr);
+		}
+
+		.project-article--with-toc > .project-main-column {
+			grid-column: 2;
+		}
+
+		.project-article--with-toc > .project-toc-column {
+			grid-row: 4;
+			grid-column: 1;
+			align-self: stretch;
+			justify-self: end;
+			width: min(17rem, calc(100% - 3rem));
+			margin-right: 3rem;
+		}
+
+		.project-article--with-toc > .project-prose {
+			grid-row: 4;
 		}
 	}
 </style>
