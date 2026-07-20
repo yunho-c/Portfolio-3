@@ -2,6 +2,7 @@ import { Client } from '@notionhq/client';
 import { NotionToMarkdown } from 'notion-to-md';
 import { env } from '$env/dynamic/private';
 import { renderNotionMediaBlock } from '$lib/notion-embeds';
+import { normalizeNotionFoldables } from '$lib/notion-foldables';
 
 // Initialize the Notion client with a fallback empty string for dev environments without keys
 const notion = new Client({ auth: env.NOTION_API_KEY || '' });
@@ -160,7 +161,7 @@ export async function getProjectBySlug(slug: string): Promise<{ project: Project
 	};
 
 	// Convert the Notion Block AST into raw Markdown!
-	const mdblocks = await n2m.pageToMarkdown(page.id);
+	const mdblocks = normalizeNotionFoldables(await n2m.pageToMarkdown(page.id));
 	const content = n2m.toMarkdownString(mdblocks);
 
 	return {

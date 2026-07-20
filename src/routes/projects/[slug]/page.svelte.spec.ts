@@ -46,6 +46,38 @@ describe('/projects/[slug]/+page.svelte', () => {
 		await expect.element(page.getByRole('tooltip')).not.toBeInTheDocument();
 	});
 
+	it('opens a semantic foldable heading without rendering its content as code', async () => {
+		render(Page, {
+			data: {
+				project,
+				content: `<details>
+<summary>
+
+### Background
+
+</summary>
+
+Hidden project context.
+
+</details>`
+			}
+		});
+
+		const details = document.querySelector<HTMLDetailsElement>('details');
+		const summary = document.querySelector<HTMLElement>('summary');
+
+		expect(details?.open).toBe(false);
+		expect(summary?.tabIndex).toBe(0);
+		expect(summary?.querySelector('h3')?.textContent).toBe('Background');
+		expect(document.querySelector('pre code')).toBeNull();
+		await expect.element(page.getByText('Hidden project context.')).not.toBeVisible();
+
+		await page.getByRole('heading', { name: 'Background' }).click();
+
+		expect(details?.open).toBe(true);
+		await expect.element(page.getByText('Hidden project context.')).toBeVisible();
+	});
+
 	it('renders responsive video and iframe figures from Notion blocks', async () => {
 		const video = renderNotionMediaBlock({
 			type: 'embed',

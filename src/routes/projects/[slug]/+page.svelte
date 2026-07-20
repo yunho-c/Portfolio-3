@@ -261,6 +261,74 @@
 		outline-offset: 3px;
 	}
 
+	:global(.prose details) {
+		margin: 2rem 0;
+		padding: 0.15rem 0;
+		background: transparent;
+	}
+
+	:global(.prose details[open]) {
+		padding-bottom: 0.9rem;
+	}
+
+	:global(.prose details > summary) {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		margin: 0;
+		padding: 0.85rem 0.15rem;
+		color: var(--foreground);
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+	}
+
+	:global(.prose details > summary::-webkit-details-marker) {
+		display: none;
+	}
+
+	:global(.prose details > summary::before) {
+		width: 0.5rem;
+		height: 0.5rem;
+		flex: 0 0 auto;
+		border-right: 1.5px solid currentColor;
+		border-bottom: 1.5px solid currentColor;
+		color: var(--muted-foreground);
+		content: '';
+		transform: rotate(-45deg);
+		transition:
+			color 140ms ease,
+			transform 140ms ease;
+	}
+
+	:global(.prose details[open] > summary::before) {
+		transform: rotate(45deg);
+	}
+
+	:global(.prose details > summary:hover::before) {
+		color: var(--foreground);
+	}
+
+	:global(.prose details > summary:focus-visible) {
+		border-radius: 0.25rem;
+		outline: 2px solid var(--ring);
+		outline-offset: 3px;
+	}
+
+	:global(.prose details > summary > :is(h1, h2, h3, h4, h5, h6)) {
+		flex: 1;
+		margin: 0;
+		color: inherit;
+	}
+
+	:global(.prose details > summary + *) {
+		margin-top: 0.65rem;
+	}
+
+	:global(.prose details > :last-child) {
+		margin-bottom: 0;
+	}
+
 	:global(.project-embed) {
 		margin: 2.75rem 0;
 	}
@@ -376,6 +444,10 @@
 
 	@media (prefers-reduced-motion: reduce) {
 		:global(.project-hover-note) {
+			transition: none;
+		}
+
+		:global(.prose details > summary::before) {
 			transition: none;
 		}
 
