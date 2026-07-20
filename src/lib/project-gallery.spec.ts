@@ -4,6 +4,7 @@ import { NotionToMarkdown } from 'notion-to-md';
 import {
 	createProjectGallerySentinel,
 	extractNotionGalleries,
+	getProjectGalleryPreviewItems,
 	type ProjectGalleryItem
 } from './project-gallery';
 import type { NotionMarkdownBlock } from './notion-foldables';
@@ -72,6 +73,24 @@ describe('extractNotionGalleries', () => {
 		expect(result.galleries[0].title).toBeUndefined();
 	});
 
+	it('ignores empty paragraph separators between gallery media', () => {
+		const result = extractNotionGalleries(
+			[
+				block('gallery', 'toggle', '[GALLERY]', [
+					block('image', 'image', 'image'),
+					block('separator', 'paragraph', '  \n'),
+					block('video', 'video', 'video')
+				])
+			],
+			new Map<string, ProjectGalleryItem>([
+				['image', image],
+				['video', video]
+			])
+		);
+
+		expect(result.galleries[0].items).toEqual([image, video]);
+	});
+
 	it('preserves an invalid gallery as an ordinary foldable and warns', () => {
 		const warn = vi.fn();
 		const gallery = block('invalid-gallery', 'toggle', '[GALLERY] Mixed children', [
@@ -104,5 +123,25 @@ describe('extractNotionGalleries', () => {
 
 		expect(result.blocks).toEqual([outer]);
 		expect(result.galleries).toEqual([]);
+	});
+});
+
+describe('getProjectGalleryPreviewItems', () => {
+	it('preserves image and video order while excluding iframes', () => {
+		expect(
+			getProjectGalleryPreviewItems({
+				id: 'mixed-gallery',
+				items: [
+					video,
+					{
+						kind: 'iframe',
+						src: 'https://example.com/demo',
+						label: 'Interactive demo',
+						host: 'example.com'
+					},
+					image
+				]
+			})
+		).toEqual([video, image]);
 	});
 });

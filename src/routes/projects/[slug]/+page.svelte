@@ -14,6 +14,10 @@
 	$: ({ project, content, galleries } = data);
 	$: renderedDocument = renderProjectDocument(content || '', galleries || []);
 	$: ({ segments, headings } = renderedDocument);
+	$: thumbnailGalleryItem = project.thumbnailGallery?.[0];
+	$: thumbnailIsVideo =
+		thumbnailGalleryItem?.kind === 'video' ||
+		(!thumbnailGalleryItem && project.thumbnail.match(/\.(mp4|webm|ogg|mov)$/i));
 
 	let proseRoot: HTMLDivElement;
 	let tooltipElement: HTMLDivElement;
@@ -290,10 +294,10 @@
 		</header>
 		
 		{#if project.thumbnail}
-			{#if project.thumbnail.match(/\.(mp4|webm|ogg|mov)$/i)}
+			{#if thumbnailIsVideo}
 				<video src={project.thumbnail} autoplay loop muted playsinline class="project-main-column mb-16 w-full rounded-xl object-cover shadow-sm border border-border/50 max-h-[400px]"></video>
 			{:else}
-				<img src={project.thumbnail} alt={project.name} class="project-main-column mb-16 w-full rounded-xl object-cover shadow-sm border border-border/50 max-h-[400px]" />
+				<img src={project.thumbnail} alt={thumbnailGalleryItem?.label ?? project.name} class="project-main-column mb-16 w-full rounded-xl object-cover shadow-sm border border-border/50 max-h-[400px]" />
 			{/if}
 		{/if}
 

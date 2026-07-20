@@ -253,4 +253,25 @@ Second body.`
 			.element(page.getByRole('button', { name: 'Pause gallery autoplay' }))
 			.not.toBeInTheDocument();
 	});
+
+	it('uses the first gallery preview item for the project thumbnail slot', () => {
+		const { container } = render(Page, {
+			data: {
+				project: {
+					...project,
+					thumbnail: '/gallery-preview.mp4',
+					thumbnailGallery: [
+						{ kind: 'video' as const, src: '/gallery-preview.mp4', label: 'Gallery preview' },
+						{ kind: 'image' as const, src: '/favicon.svg', label: 'Gallery still' }
+					]
+				},
+				galleries: [],
+				content: ''
+			}
+		});
+
+		const thumbnail = container.querySelector<HTMLVideoElement>('video.project-main-column');
+		expect(thumbnail).not.toBeNull();
+		expect(thumbnail?.getAttribute('src')).toBe('/gallery-preview.mp4');
+	});
 });

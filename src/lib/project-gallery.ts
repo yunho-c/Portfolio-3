@@ -27,6 +27,8 @@ export interface ProjectGallery {
 	items: ProjectGalleryItem[];
 }
 
+export type ProjectGalleryPreviewItem = Extract<ProjectGalleryItem, { kind: 'image' | 'video' }>;
+
 export const PROJECT_GALLERY_SENTINEL_PREFIX = 'PROJECT_GALLERY:';
 
 const GALLERY_MARKER = '[GALLERY]';
@@ -67,6 +69,18 @@ export function createProjectGallerySentinel(id: string): string {
 	return `<!--${PROJECT_GALLERY_SENTINEL_PREFIX}${encodeURIComponent(id)}-->`;
 }
 
+function isEmptyParagraph(block: NotionMarkdownBlock): boolean {
+	return block.type === 'paragraph' && block.parent.trim() === '' && block.children.length === 0;
+}
+
+export function getProjectGalleryPreviewItems(
+	gallery?: ProjectGallery
+): ProjectGalleryPreviewItem[] {
+	return (gallery?.items ?? []).filter(
+		(item): item is ProjectGalleryPreviewItem => item.kind === 'image' || item.kind === 'video'
+	);
+}
+
 export function extractNotionGalleries(
 	blocks: NotionMarkdownBlock[],
 	mediaByBlockId: ReadonlyMap<string, ProjectGalleryItem>,
@@ -84,11 +98,12 @@ export function extractNotionGalleries(
 			return block;
 		}
 
-		const items = block.children.map((child) => mediaByBlockId.get(child.blockId));
+		const galleryChildren = block.children.filter((child) => !isEmptyParagraph(child));
+		const items = galleryChildren.map((child) => mediaByBlockId.get(child.blockId));
 		const isValid =
-			block.children.length > 0 &&
+			galleryChildren.length > 0 &&
 			items.every((item): item is ProjectGalleryItem => Boolean(item)) &&
-			block.children.every((child) => child.children.length === 0);
+			galleryChildren.every((child) => child.children.length === 0);
 
 		if (!isValid) {
 			warn(

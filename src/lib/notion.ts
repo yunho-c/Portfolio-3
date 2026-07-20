@@ -6,8 +6,10 @@ import { normalizeNotionFoldables } from '$lib/notion-foldables';
 import { filterNotionHiddenBlocks } from '$lib/notion-hidden-blocks';
 import {
 	extractNotionGalleries,
+	getProjectGalleryPreviewItems,
 	type ProjectGallery,
-	type ProjectGalleryItem
+	type ProjectGalleryItem,
+	type ProjectGalleryPreviewItem
 } from '$lib/project-gallery';
 
 // Initialize the Notion client with a fallback empty string for dev environments without keys
@@ -62,6 +64,7 @@ const ICON_MAP: Record<string, string> = {
 
 const THUMBNAIL_COLORS = ['9333ea', 'f59e0b', '10b981', 'ef4444', '3b82f6'];
 const NOT_PUBLISHED_STATUS = 'Not published';
+const GALLERY_THUMBNAIL_VALUE = 'gallery';
 
 interface NotionProjectStatusPage {
 	properties?: {
@@ -89,6 +92,7 @@ export interface Project {
 	name: string;
 	featured: boolean;
 	thumbnail: string;
+	thumbnailGallery?: ProjectGalleryPreviewItem[];
 	description: string;
 	tags: { name: string; icon: string }[];
 }
@@ -113,6 +117,63 @@ export function getProjectDescription(page: unknown): string {
 	);
 }
 
+export function isGalleryThumbnail(value: unknown): boolean {
+	return typeof value === 'string' && value.trim().toLowerCase() === GALLERY_THUMBNAIL_VALUE;
+}
+
+function createProjectFromPage(page: any, slug?: string): Project {
+	const name = page.properties.Name?.title[0]?.plain_text || 'Untitled';
+	const color = THUMBNAIL_COLORS[name.length % THUMBNAIL_COLORS.length];
+	const placeholder = `https://placehold.co/600x400/${color}/white?text=${encodeURIComponent(name)}`;
+	const thumbnailValue = page.properties.Thumbnail?.url;
+
+	return {
+		id: page.id,
+		slug: slug ?? slugify(name),
+		name,
+		featured: page.properties.Featured?.checkbox || false,
+		thumbnail: isGalleryThumbnail(thumbnailValue) ? placeholder : thumbnailValue || placeholder,
+		description: getProjectDescription(page),
+		tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({
+			name: tag.name,
+			icon: ICON_MAP[tag.name] || ''
+		}))
+	};
+}
+
+export function resolveProjectGalleryThumbnail(
+	project: Project,
+	galleries: ProjectGallery[],
+	warn: (message: string) => void = console.warn
+): Project {
+	const thumbnailGallery = getProjectGalleryPreviewItems(galleries[0]);
+	if (thumbnailGallery.length === 0) {
+		warn(
+			`Project "${project.name}" uses Thumbnail = gallery, but its first valid gallery has no image or video items; using the generated placeholder.`
+		);
+		return project;
+	}
+
+	return {
+		...project,
+		thumbnail: thumbnailGallery[0].src,
+		thumbnailGallery
+	};
+}
+
+async function getProjectDocument(
+	pageId: string
+): Promise<{ content: string; galleries: ProjectGallery[] }> {
+	const { n2m, mediaByBlockId } = createNotionMarkdownRenderer();
+	const normalizedBlocks = normalizeNotionFoldables(
+		filterNotionHiddenBlocks(await n2m.pageToMarkdown(pageId))
+	);
+	const { blocks, galleries } = extractNotionGalleries(normalizedBlocks, mediaByBlockId);
+	const content = n2m.toMarkdownString(blocks);
+
+	return { content: content.parent || '', galleries };
+}
+
 export async function getProjects(): Promise<Project[]> {
 	if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) {
 		console.warn('Missing Notion API keys. Returning mock projects.');
@@ -124,24 +185,23 @@ export async function getProjects(): Promise<Project[]> {
 			database_id: env.NOTION_DATABASE_ID
 		});
 
-		return response.results.filter(isProjectPublished).map((page: any) => {
-			const name = page.properties.Name?.title[0]?.plain_text || 'Untitled';
-			const color = THUMBNAIL_COLORS[name.length % THUMBNAIL_COLORS.length];
-			const placeholder = `https://placehold.co/600x400/${color}/white?text=${encodeURIComponent(name)}`;
+		return await Promise.all(
+			response.results.filter(isProjectPublished).map(async (page: any) => {
+				const project = createProjectFromPage(page);
+				if (!isGalleryThumbnail(page.properties.Thumbnail?.url)) return project;
 
-			return {
-				id: page.id,
-				slug: slugify(name),
-				name,
-				featured: page.properties.Featured?.checkbox || false,
-				thumbnail: page.properties.Thumbnail?.url || placeholder,
-				description: getProjectDescription(page),
-				tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({
-					name: tag.name,
-					icon: ICON_MAP[tag.name] || ''
-				}))
-			};
-		});
+				try {
+					const { galleries } = await getProjectDocument(page.id);
+					return resolveProjectGalleryThumbnail(project, galleries);
+				} catch (error) {
+					console.warn(
+						`Failed to load the gallery thumbnail for project "${project.name}"; using the generated placeholder.`,
+						error
+					);
+					return project;
+				}
+			})
+		);
 	} catch (error) {
 		console.error('Failed to fetch from Notion:', error);
 		return getMockProjects();
@@ -173,34 +233,15 @@ export async function getProjectBySlug(
 
 	if (!page) return null;
 
-	const name = page.properties.Name?.title[0]?.plain_text || 'Untitled';
-	const color = THUMBNAIL_COLORS[name.length % THUMBNAIL_COLORS.length];
-	const placeholder = `https://placehold.co/600x400/${color}/white?text=${encodeURIComponent(name)}`;
-
-	const project: Project = {
-		id: page.id,
-		slug,
-		name,
-		featured: page.properties.Featured?.checkbox || false,
-		thumbnail: page.properties.Thumbnail?.url || placeholder,
-		description: getProjectDescription(page),
-		tags: (page.properties['Tech Stack']?.multi_select || []).map((tag: any) => ({
-			name: tag.name,
-			icon: ICON_MAP[tag.name] || ''
-		}))
-	};
-
-	// Convert the Notion Block AST into raw Markdown!
-	const { n2m, mediaByBlockId } = createNotionMarkdownRenderer();
-	const normalizedBlocks = normalizeNotionFoldables(
-		filterNotionHiddenBlocks(await n2m.pageToMarkdown(page.id))
-	);
-	const { blocks, galleries } = extractNotionGalleries(normalizedBlocks, mediaByBlockId);
-	const content = n2m.toMarkdownString(blocks);
+	let project = createProjectFromPage(page, slug);
+	const { content, galleries } = await getProjectDocument(page.id);
+	if (isGalleryThumbnail(page.properties.Thumbnail?.url)) {
+		project = resolveProjectGalleryThumbnail(project, galleries);
+	}
 
 	return {
 		project,
-		content: content.parent || '',
+		content,
 		galleries
 	};
 }
