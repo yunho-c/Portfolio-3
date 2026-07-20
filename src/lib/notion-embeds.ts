@@ -7,7 +7,7 @@ interface NotionEmbedContent {
 	caption?: NotionRichTextFragment[];
 }
 
-interface NotionVideoContent {
+interface NotionFileContent {
 	type?: 'external' | 'file';
 	external?: { url?: string };
 	file?: { url?: string };
@@ -17,7 +17,8 @@ interface NotionVideoContent {
 interface NotionMediaBlock {
 	type?: string;
 	embed?: NotionEmbedContent;
-	video?: NotionVideoContent;
+	video?: NotionFileContent;
+	image?: NotionFileContent;
 }
 
 const VIDEO_EXTENSIONS = new Set(['.m4v', '.mov', '.mp4', '.ogg', '.ogv', '.webm']);
@@ -61,11 +62,11 @@ function isVideoUrl(url: URL): boolean {
 	return [...VIDEO_EXTENSIONS].some((extension) => pathname.endsWith(extension));
 }
 
-function getVideoLabel(url: URL, caption: string): string {
+function getMediaLabel(url: URL, caption: string, fallback: string): string {
 	if (caption) return caption;
 
 	const filename = url.pathname.split('/').filter(Boolean).at(-1);
-	if (!filename) return 'Embedded video';
+	if (!filename) return fallback;
 
 	try {
 		return decodeURIComponent(filename);
@@ -74,15 +75,22 @@ function getVideoLabel(url: URL, caption: string): string {
 	}
 }
 
-function renderCaption(caption: string): string {
-	return caption
-		? `\n<figcaption class="project-embed__caption">${escapeHtml(caption)}</figcaption>`
-		: '';
+function renderCaption(caption: string, className = 'project-embed__caption'): string {
+	return caption ? `\n<figcaption class="${className}">${escapeHtml(caption)}</figcaption>` : '';
+}
+
+function renderImage(url: URL, caption: string): string {
+	const href = escapeHtml(url.href);
+	const label = escapeHtml(getMediaLabel(url, caption, 'Project image'));
+
+	return `<figure class="project-image">
+<img class="project-image__media" src="${href}" alt="${label}" loading="lazy" decoding="async">${renderCaption(caption, 'project-image__caption')}
+</figure>`;
 }
 
 function renderVideo(url: URL, caption: string): string {
 	const href = escapeHtml(url.href);
-	const label = escapeHtml(getVideoLabel(url, caption));
+	const label = escapeHtml(getMediaLabel(url, caption, 'Embedded video'));
 
 	return `<figure class="project-embed project-embed--video">
 <video class="project-embed__video" src="${href}" controls playsinline preload="metadata" aria-label="${label}">
@@ -103,9 +111,16 @@ function renderIframe(url: URL, caption: string): string {
 </figure>`;
 }
 
-/** Convert Notion video and embed blocks into safe, responsive HTML. */
+/** Convert Notion image, video, and embed blocks into safe, responsive HTML. */
 export function renderNotionMediaBlock(block: unknown): string {
 	const mediaBlock = block as NotionMediaBlock;
+
+	if (mediaBlock.type === 'image') {
+		const image = mediaBlock.image;
+		const source = image?.type === 'file' ? image.file?.url : image?.external?.url;
+		const url = getHttpsUrl(source);
+		return url ? renderImage(url, getCaption(image?.caption)) : '';
+	}
 
 	if (mediaBlock.type === 'video') {
 		const video = mediaBlock.video;

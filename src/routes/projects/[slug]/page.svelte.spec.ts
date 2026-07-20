@@ -116,7 +116,15 @@ Second body.`
 		await expect.element(firstLink).toHaveAttribute('aria-current', 'true');
 	});
 
-	it('renders responsive video and iframe figures from Notion blocks', async () => {
+	it('renders responsive image, video, and iframe figures from Notion blocks', async () => {
+		const image = renderNotionMediaBlock({
+			type: 'image',
+			image: {
+				type: 'external',
+				external: { url: 'https://example.com/image.png' },
+				caption: [{ plain_text: 'Image comparison' }]
+			}
+		});
 		const video = renderNotionMediaBlock({
 			type: 'embed',
 			embed: {
@@ -135,19 +143,32 @@ Second body.`
 		render(Page, {
 			data: {
 				project,
-				content: `${video}\n\n${iframe}`
+				content: `${image}\n\n${video}\n\n${iframe}`
 			}
 		});
 
+		const imageFigure = document.querySelector<HTMLElement>('.project-image');
+		const imageElement = document.querySelector<HTMLImageElement>('.project-image__media');
 		const videoElement = document.querySelector<HTMLVideoElement>('.project-embed__video');
 		const iframeElement = document.querySelector<HTMLIFrameElement>('.project-embed__iframe');
 		const frameShell = document.querySelector<HTMLElement>('.project-embed__frame-shell');
+		const prose = document.querySelector<HTMLElement>('.project-prose');
 
+		expect(imageElement?.alt).toBe('Image comparison');
+		expect(imageElement?.loading).toBe('lazy');
+		const imageBounds = imageFigure!.getBoundingClientRect();
+		const proseBounds = prose!.getBoundingClientRect();
+		expect(
+			Math.abs(
+				imageBounds.left + imageBounds.width / 2 - (proseBounds.left + proseBounds.width / 2)
+			)
+		).toBeLessThan(1);
 		expect(videoElement?.controls).toBe(true);
 		expect(videoElement?.preload).toBe('metadata');
 		expect(iframeElement?.title).toBe('Interactive demo');
 		expect(iframeElement?.loading).toBe('lazy');
 		expect(frameShell?.getBoundingClientRect().height).toBeGreaterThanOrEqual(352);
+		await expect.element(page.getByText('Image comparison', { exact: true })).toBeInTheDocument();
 		await expect.element(page.getByText('Video demo', { exact: true })).toBeInTheDocument();
 		await expect.element(page.getByText('Interactive demo', { exact: true })).toBeInTheDocument();
 	});

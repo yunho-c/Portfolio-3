@@ -447,6 +447,19 @@
 		margin: 2.75rem 0;
 	}
 
+	:global(.project-image) {
+		width: fit-content;
+		max-width: 100%;
+		margin: 2.75rem auto;
+	}
+
+	:global(.project-image__media) {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		margin: 0 auto;
+	}
+
 	:global(.project-embed--iframe) {
 		width: min(72rem, calc(100vw - 2rem));
 		margin-left: 50%;
@@ -483,7 +496,8 @@
 		background: var(--background);
 	}
 
-	:global(.project-embed__caption) {
+	:global(.project-embed__caption),
+	:global(.project-image__caption) {
 		margin-top: 0.7rem;
 		color: var(--muted-foreground);
 		font-size: 0.8125rem;

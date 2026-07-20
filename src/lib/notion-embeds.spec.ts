@@ -2,6 +2,26 @@ import { describe, expect, it } from 'vitest';
 import { renderNotionMediaBlock } from './notion-embeds';
 
 describe('renderNotionMediaBlock', () => {
+	it('renders Notion images as centered captioned figures', () => {
+		const html = renderNotionMediaBlock({
+			type: 'image',
+			image: {
+				type: 'external',
+				external: { url: 'https://assets.yunhocho.com/images/oimg.png' },
+				caption: [{ plain_text: 'OIMG quality comparison' }]
+			}
+		});
+
+		expect(html).toContain('class="project-image"');
+		expect(html).toContain('class="project-image__media"');
+		expect(html).toContain('src="https://assets.yunhocho.com/images/oimg.png"');
+		expect(html).toContain('alt="OIMG quality comparison"');
+		expect(html).toContain('loading="lazy" decoding="async"');
+		expect(html).toContain(
+			'<figcaption class="project-image__caption">OIMG quality comparison</figcaption>'
+		);
+	});
+
 	it('renders video-like embed URLs as native video figures', () => {
 		const html = renderNotionMediaBlock({
 			type: 'embed',
@@ -58,8 +78,12 @@ describe('renderNotionMediaBlock', () => {
 			}
 		});
 		const rejected = renderNotionMediaBlock({
-			type: 'embed',
-			embed: { url: 'javascript:alert(1)', caption: [] }
+			type: 'image',
+			image: {
+				type: 'external',
+				external: { url: 'javascript:alert(1)' },
+				caption: []
+			}
 		});
 
 		expect(escaped).toContain('Demo &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;');

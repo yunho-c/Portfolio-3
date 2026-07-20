@@ -7,6 +7,7 @@ import { normalizeNotionFoldables } from '$lib/notion-foldables';
 // Initialize the Notion client with a fallback empty string for dev environments without keys
 const notion = new Client({ auth: env.NOTION_API_KEY || '' });
 const n2m = new NotionToMarkdown({ notionClient: notion });
+n2m.setCustomTransformer('image', renderNotionMediaBlock);
 n2m.setCustomTransformer('embed', renderNotionMediaBlock);
 n2m.setCustomTransformer('video', renderNotionMediaBlock);
 
