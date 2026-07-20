@@ -33,11 +33,16 @@
 					Korean.
 				</p>
 				<p>
-					I am a graduate student completing an M.S. degree in Robotics at Georgia Tech,
+					I am a graduate student pursuing an M.S. degree in robotics,
 					advised by <a href="https://www.shreyaskousik.com/" class="inline-link"
-						>Shreyas Kousik</a
-					>. Previously, I received a bachelor’s degree in mechanical engineering, with a minor in
-					psychology, at Georgia Tech.
+						>Prof. Shreyas Kousik</a
+					>
+					in the
+					<a href="https://saferoboticslab.me.gatech.edu/" class="inline-link"
+						>Safe Robotics Lab</a
+					>
+					at Georgia Tech. Before that, I received a bachelor’s degree in mechanical engineering with
+					a minor in psychology at Georgia Tech.
 				</p>
 				<p class="text-muted-foreground">
 					I like to run, listen to music, read webtoons, take photos, and play sim racing games.
