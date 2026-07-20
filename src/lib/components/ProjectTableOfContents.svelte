@@ -46,6 +46,10 @@
 		transition: color 150ms ease;
 	}
 
+	li[aria-level='1'] {
+		font-weight: 500;
+	}
+
 	li:has(> a[aria-current='true']),
 	ul:hover li {
 		color: var(--foreground);
