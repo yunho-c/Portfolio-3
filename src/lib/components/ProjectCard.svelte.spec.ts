@@ -57,12 +57,14 @@ afterEach(() => {
 
 describe('ProjectCard', () => {
 	it('renders the project one-liner in the hover content', async () => {
-		render(ProjectCard, { project });
+		const { container } = render(ProjectCard, { project });
 
 		await expect
 			.element(page.getByText('A concise explanation of the project.'))
 			.toBeInTheDocument();
 		await expect.element(page.getByText('Svelte')).toBeInTheDocument();
+		expect(container.querySelector('.project-card-media--single')).not.toBeNull();
+		expect(getComputedStyle(container.querySelector('img')!).objectFit).toBe('cover');
 	});
 
 	it('preloads crossfade layers, waits for hover intent, and resets on leave', async () => {
@@ -88,6 +90,8 @@ describe('ProjectCard', () => {
 		const layers = [...container.querySelectorAll<HTMLElement>('.project-card-media-layer')];
 		expect(layers).toHaveLength(3);
 		expect(getComputedStyle(layers[0]).transitionDuration).toBe('0.18s');
+		expect(container.querySelector('.project-card-media--gallery')).not.toBeNull();
+		expect(getComputedStyle(layers[0].querySelector('img')!).objectFit).toBe('cover');
 		expect(card?.dataset.activeGalleryIndex).toBe('0');
 		expect(card?.dataset.galleryScrubActive).toBeUndefined();
 
@@ -108,6 +112,49 @@ describe('ProjectCard', () => {
 		expect(
 			container.querySelector('[data-card-media-active="true"] img')?.getAttribute('src')
 		).toBe('/favicon.svg?frame=1');
+	});
+
+	it('contains only gallery media that is wider than its card frame', async () => {
+		let triggerResize: (() => void) | undefined;
+		vi.stubGlobal(
+			'ResizeObserver',
+			class {
+				constructor(callback: ResizeObserverCallback) {
+					triggerResize = () => callback([], this as unknown as ResizeObserver);
+				}
+
+				observe() {}
+				unobserve() {}
+				disconnect() {}
+			}
+		);
+
+		const { container } = render(ProjectCard, { project: galleryProject() });
+		const mediaContainer = container.querySelector<HTMLElement>('.project-card-media')!;
+		const firstImage = container.querySelector<HTMLImageElement>('.project-card-media-layer img')!;
+		const firstLayer = firstImage.closest<HTMLElement>('.project-card-media-layer')!;
+
+		mediaContainer.getBoundingClientRect = () => ({ width: 300, height: 200 }) as DOMRect;
+		triggerResize?.();
+		Object.defineProperties(firstImage, {
+			naturalWidth: { configurable: true, value: 600 },
+			naturalHeight: { configurable: true, value: 200 }
+		});
+		firstImage.dispatchEvent(new Event('load'));
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(firstLayer.dataset.cardMediaFit).toBe('contain');
+		expect(getComputedStyle(firstImage).objectFit).toBe('contain');
+
+		Object.defineProperties(firstImage, {
+			naturalWidth: { configurable: true, value: 200 },
+			naturalHeight: { configurable: true, value: 600 }
+		});
+		firstImage.dispatchEvent(new Event('load'));
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(firstLayer.dataset.cardMediaFit).toBe('cover');
+		expect(getComputedStyle(firstImage).objectFit).toBe('cover');
 	});
 
 	it('cancels gallery activation when the pointer leaves during the intent delay', async () => {

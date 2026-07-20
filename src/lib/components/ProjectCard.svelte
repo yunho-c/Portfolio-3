@@ -17,10 +17,20 @@
 	let mediaPreferencesReady = false;
 	let galleryPrepared = false;
 	let lastPointerX = 0;
+	let mediaContainerAspectRatio = 0;
+	let galleryMediaAspectRatios: Array<number | undefined> = [];
 	let hoverIntentTimer: ReturnType<typeof setTimeout> | undefined;
 	const galleryVideoElements = new Map<number, HTMLVideoElement>();
 
 	$: galleryItems = project.thumbnailGallery ?? [];
+	$: galleryMediaContainStates = galleryItems.map((_, index) => {
+		const mediaAspectRatio = galleryMediaAspectRatios[index];
+		return Boolean(
+			mediaAspectRatio &&
+				mediaContainerAspectRatio &&
+				mediaAspectRatio > mediaContainerAspectRatio
+		);
+	});
 	$: activeGalleryItem = galleryItems[activeIndex] ?? galleryItems[0];
 	$: activeSource = activeGalleryItem?.src ?? project.thumbnail;
 	$: activeKind = activeGalleryItem?.kind ?? (VIDEO_EXTENSION.test(activeSource) ? 'video' : 'image');
@@ -104,14 +114,64 @@
 	}
 
 	function registerGalleryVideo(node: HTMLVideoElement, index: number) {
+		function recordAspectRatio() {
+			recordGalleryMediaAspectRatio(index, node.videoWidth, node.videoHeight);
+		}
+
 		galleryVideoElements.set(index, node);
+		node.addEventListener('loadedmetadata', recordAspectRatio);
+		recordAspectRatio();
 		updateGalleryVideoPlayback();
 
 		return {
 			destroy() {
 				galleryVideoElements.delete(index);
+				node.removeEventListener('loadedmetadata', recordAspectRatio);
 			}
 		};
+	}
+
+	function measureGalleryImage(node: HTMLImageElement, index: number) {
+		function recordAspectRatio() {
+			recordGalleryMediaAspectRatio(index, node.naturalWidth, node.naturalHeight);
+		}
+
+		node.addEventListener('load', recordAspectRatio);
+		recordAspectRatio();
+
+		return {
+			destroy() {
+				node.removeEventListener('load', recordAspectRatio);
+			}
+		};
+	}
+
+	function observeMediaContainer(node: HTMLElement) {
+		function updateAspectRatio() {
+			const { width, height } = node.getBoundingClientRect();
+			mediaContainerAspectRatio = width > 0 && height > 0 ? width / height : 0;
+		}
+
+		const observer = new ResizeObserver(updateAspectRatio);
+		updateAspectRatio();
+		observer.observe(node);
+
+		return {
+			destroy() {
+				observer.disconnect();
+			}
+		};
+	}
+
+	function recordGalleryMediaAspectRatio(index: number, width: number, height: number) {
+		if (width <= 0 || height <= 0) return;
+
+		const aspectRatio = width / height;
+		if (galleryMediaAspectRatios[index] === aspectRatio) return;
+
+		const nextAspectRatios = [...galleryMediaAspectRatios];
+		nextAspectRatios[index] = aspectRatio;
+		galleryMediaAspectRatios = nextAspectRatios;
 	}
 
 	function updateGalleryVideoPlayback() {
@@ -138,7 +198,10 @@
 	onpointerleave={handlePointerLeave}
 >
 	<div
-		class="project-card-media h-48 w-full overflow-hidden transition-transform duration-500 group-hover:scale-110 group-focus-visible:scale-110"
+		use:observeMediaContainer
+		class="project-card-media h-48 w-full overflow-hidden"
+		class:project-card-media--gallery={galleryItems.length > 0}
+		class:project-card-media--single={galleryItems.length === 0}
 	>
 		{#if galleryItems.length > 0}
 			{#each galleryItems as item, index (`${item.kind}:${item.src}:${index}`)}
@@ -146,7 +209,9 @@
 					<div
 						class="project-card-media-layer"
 						class:project-card-media-layer--active={index === activeIndex}
+						class:project-card-media-layer--contain={galleryMediaContainStates[index]}
 						data-card-media-active={index === activeIndex ? 'true' : undefined}
+						data-card-media-fit={galleryMediaContainStates[index] ? 'contain' : 'cover'}
 						aria-hidden={index === activeIndex ? undefined : 'true'}
 					>
 						{#if item.kind === 'video'}
@@ -161,7 +226,11 @@
 								aria-label={index === activeIndex ? item.label : undefined}
 							></video>
 						{:else}
-							<img src={item.src} alt={index === activeIndex ? item.label : ''} />
+							<img
+								use:measureGalleryImage={index}
+								src={item.src}
+								alt={index === activeIndex ? item.label : ''}
+							/>
 						{/if}
 					</div>
 				{/if}
@@ -227,6 +296,26 @@
 		position: relative;
 	}
 
+	.project-card-media--gallery {
+		background: var(--muted);
+	}
+
+	.project-card-media--single {
+		transition: transform 500ms;
+	}
+
+	.project-card-media--single > :is(img, video) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	:global(.group:hover) .project-card-media--single,
+	:global(.group:focus-visible) .project-card-media--single {
+		transform: scale(1.1);
+	}
+
 	.project-card-media-layer {
 		position: absolute;
 		inset: 0;
@@ -245,6 +334,10 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	.project-card-media-layer--contain > :is(img, video) {
+		object-fit: contain;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
