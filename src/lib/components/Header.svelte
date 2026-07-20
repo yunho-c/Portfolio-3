@@ -22,7 +22,9 @@
 			<Button variant="ghost" size="sm" href="/projects" class="text-sm font-medium">Projects</Button>
 		</div>
 		<div class="header-entry" style="--header-entry-delay: 290ms">
-			<Button variant="ghost" size="sm" href="https://research.yunhocho.com" class="text-sm font-medium">Research</Button>
+			<Button variant="ghost" size="sm" href="/publications" class="text-sm font-medium"
+				>Publications</Button
+			>
 		</div>
 	</nav>
 
