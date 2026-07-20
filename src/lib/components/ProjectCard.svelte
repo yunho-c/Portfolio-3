@@ -15,13 +15,22 @@
 	let scrubSupported = false;
 	let prefersReducedMotion = false;
 	let mediaPreferencesReady = false;
+	let galleryPrepared = false;
 	let lastPointerX = 0;
 	let hoverIntentTimer: ReturnType<typeof setTimeout> | undefined;
+	const galleryVideoElements = new Map<number, HTMLVideoElement>();
 
 	$: galleryItems = project.thumbnailGallery ?? [];
 	$: activeGalleryItem = galleryItems[activeIndex] ?? galleryItems[0];
 	$: activeSource = activeGalleryItem?.src ?? project.thumbnail;
 	$: activeKind = activeGalleryItem?.kind ?? (VIDEO_EXTENSION.test(activeSource) ? 'video' : 'image');
+	$: {
+		activeIndex;
+		mediaPreferencesReady;
+		prefersReducedMotion;
+		galleryPrepared;
+		updateGalleryVideoPlayback();
+	}
 
 	onMount(() => {
 		const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -63,6 +72,7 @@
 		if (!scrubSupported || galleryItems.length < 2 || event.pointerType === 'touch') return;
 
 		pointerInside = true;
+		galleryPrepared = true;
 		lastPointerX = event.clientX;
 		if (hoverIntentTimer) clearTimeout(hoverIntentTimer);
 		hoverIntentTimer = setTimeout(() => {
@@ -92,6 +102,28 @@
 			hoverIntentTimer = undefined;
 		}
 	}
+
+	function registerGalleryVideo(node: HTMLVideoElement, index: number) {
+		galleryVideoElements.set(index, node);
+		updateGalleryVideoPlayback();
+
+		return {
+			destroy() {
+				galleryVideoElements.delete(index);
+			}
+		};
+	}
+
+	function updateGalleryVideoPlayback() {
+		for (const [index, video] of galleryVideoElements) {
+			const shouldPlay = index === activeIndex && mediaPreferencesReady && !prefersReducedMotion;
+			if (shouldPlay && video.paused) {
+				void video.play().catch(() => undefined);
+			} else if (!shouldPlay && !video.paused) {
+				video.pause();
+			}
+		}
+	}
 </script>
 
 <a
@@ -105,8 +137,36 @@
 	onpointermove={handlePointerMove}
 	onpointerleave={handlePointerLeave}
 >
-	{#key `${activeKind}:${activeSource}`}
-		{#if activeKind === 'video'}
+	<div
+		class="project-card-media h-48 w-full overflow-hidden transition-transform duration-500 group-hover:scale-110 group-focus-visible:scale-110"
+	>
+		{#if galleryItems.length > 0}
+			{#each galleryItems as item, index (`${item.kind}:${item.src}:${index}`)}
+				{#if index === 0 || galleryPrepared}
+					<div
+						class="project-card-media-layer"
+						class:project-card-media-layer--active={index === activeIndex}
+						data-card-media-active={index === activeIndex ? 'true' : undefined}
+						aria-hidden={index === activeIndex ? undefined : 'true'}
+					>
+						{#if item.kind === 'video'}
+							<video
+								use:registerGalleryVideo={index}
+								src={item.src}
+								loop
+								muted
+								playsinline
+								preload="metadata"
+								disablepictureinpicture
+								aria-label={index === activeIndex ? item.label : undefined}
+							></video>
+						{:else}
+							<img src={item.src} alt={index === activeIndex ? item.label : ''} />
+						{/if}
+					</div>
+				{/if}
+			{/each}
+		{:else if activeKind === 'video'}
 			<video
 				src={activeSource}
 				autoplay={mediaPreferencesReady && !prefersReducedMotion}
@@ -116,16 +176,16 @@
 				preload="metadata"
 				disablepictureinpicture
 				aria-label={activeGalleryItem?.label ?? project.name}
-				class="pointer-events-none h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110 group-focus-visible:scale-110"
+				class="pointer-events-none h-full w-full object-cover"
 			></video>
 		{:else}
 			<img
 				src={activeSource}
 				alt={activeGalleryItem?.label ?? project.name}
-				class="pointer-events-none h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110 group-focus-visible:scale-110"
+				class="pointer-events-none h-full w-full object-cover"
 			/>
 		{/if}
-	{/key}
+	</div>
 	<div
 		class="absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
 	></div>
@@ -161,3 +221,35 @@
 		{/if}
 	</div>
 </a>
+
+<style>
+	.project-card-media {
+		position: relative;
+	}
+
+	.project-card-media-layer {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 180ms cubic-bezier(0.22, 1, 0.36, 1);
+		will-change: opacity;
+	}
+
+	.project-card-media-layer--active {
+		opacity: 1;
+	}
+
+	.project-card-media-layer > :is(img, video) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.project-card-media-layer {
+			transition: none;
+		}
+	}
+</style>

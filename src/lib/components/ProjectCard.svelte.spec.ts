@@ -52,6 +52,7 @@ function galleryProject(): Project {
 
 afterEach(() => {
 	vi.unstubAllGlobals();
+	vi.restoreAllMocks();
 });
 
 describe('ProjectCard', () => {
@@ -64,7 +65,7 @@ describe('ProjectCard', () => {
 		await expect.element(page.getByText('Svelte')).toBeInTheDocument();
 	});
 
-	it('waits for hover intent, maps pointer x to gallery items, and resets on leave', async () => {
+	it('preloads crossfade layers, waits for hover intent, and resets on leave', async () => {
 		stubPointerPreferences();
 		const { container } = render(ProjectCard, { project: galleryProject() });
 		const card = container.querySelector<HTMLAnchorElement>('a');
@@ -84,13 +85,18 @@ describe('ProjectCard', () => {
 
 		card!.dispatchEvent(pointerEvent('pointerenter', 250));
 		await new Promise((resolve) => setTimeout(resolve, 240));
+		const layers = [...container.querySelectorAll<HTMLElement>('.project-card-media-layer')];
+		expect(layers).toHaveLength(3);
+		expect(getComputedStyle(layers[0]).transitionDuration).toBe('0.18s');
 		expect(card?.dataset.activeGalleryIndex).toBe('0');
 		expect(card?.dataset.galleryScrubActive).toBeUndefined();
 
 		await new Promise((resolve) => setTimeout(resolve, 90));
 		expect(card?.dataset.activeGalleryIndex).toBe('2');
 		expect(card?.dataset.galleryScrubActive).toBe('true');
-		expect(container.querySelector('img')?.getAttribute('src')).toBe('/favicon.svg?frame=3');
+		expect(
+			container.querySelector('[data-card-media-active="true"] img')?.getAttribute('src')
+		).toBe('/favicon.svg?frame=3');
 
 		card!.dispatchEvent(pointerEvent('pointermove', 120));
 		await new Promise((resolve) => setTimeout(resolve, 0));
@@ -99,7 +105,9 @@ describe('ProjectCard', () => {
 		card!.dispatchEvent(pointerEvent('pointerleave', 301));
 		await new Promise((resolve) => setTimeout(resolve, 0));
 		expect(card?.dataset.activeGalleryIndex).toBe('0');
-		expect(container.querySelector('img')?.getAttribute('src')).toBe('/favicon.svg?frame=1');
+		expect(
+			container.querySelector('[data-card-media-active="true"] img')?.getAttribute('src')
+		).toBe('/favicon.svg?frame=1');
 	});
 
 	it('cancels gallery activation when the pointer leaves during the intent delay', async () => {
@@ -149,7 +157,69 @@ describe('ProjectCard', () => {
 		await new Promise((resolve) => setTimeout(resolve, 330));
 
 		expect(card.dataset.activeGalleryIndex).toBe('0');
-		expect(container.querySelector('img')?.getAttribute('src')).toBe('/favicon.svg?frame=1');
+		expect(container.querySelectorAll('.project-card-media-layer')).toHaveLength(1);
+		expect(
+			container.querySelector('[data-card-media-active="true"] img')?.getAttribute('src')
+		).toBe('/favicon.svg?frame=1');
+	});
+
+	it('plays only the active video while crossfading mixed gallery media', async () => {
+		stubPointerPreferences();
+		const playing = new WeakSet<HTMLMediaElement>();
+		vi.spyOn(HTMLMediaElement.prototype, 'paused', 'get').mockImplementation(function (
+			this: HTMLMediaElement
+		) {
+			return !playing.has(this);
+		});
+		vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(function (
+			this: HTMLMediaElement
+		) {
+			playing.add(this);
+			return Promise.resolve();
+		});
+		vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (
+			this: HTMLMediaElement
+		) {
+			playing.delete(this);
+		});
+
+		const { container } = render(ProjectCard, {
+			project: {
+				...project,
+				thumbnail: '/first.mp4',
+				thumbnailGallery: [
+					{ kind: 'video', src: '/first.mp4', label: 'First video' },
+					{ kind: 'video', src: '/second.mp4', label: 'Second video' },
+					{ kind: 'image', src: '/favicon.svg', label: 'Still preview' }
+				]
+			}
+		});
+		const card = container.querySelector<HTMLAnchorElement>('a')!;
+		card.getBoundingClientRect = () =>
+			({
+				left: 0,
+				right: 300,
+				top: 0,
+				bottom: 100,
+				width: 300,
+				height: 100,
+				x: 0,
+				y: 0
+			}) as DOMRect;
+		await new Promise((resolve) => setTimeout(resolve, 20));
+		expect(playing.has(container.querySelectorAll('video')[0])).toBe(true);
+
+		card.dispatchEvent(pointerEvent('pointerenter', 150));
+		await new Promise((resolve) => setTimeout(resolve, 330));
+		const videos = container.querySelectorAll('video');
+		expect(videos).toHaveLength(2);
+		expect(playing.has(videos[0])).toBe(false);
+		expect(playing.has(videos[1])).toBe(true);
+
+		card.dispatchEvent(pointerEvent('pointerleave', 301));
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(playing.has(videos[0])).toBe(true);
+		expect(playing.has(videos[1])).toBe(false);
 	});
 
 	it('does not autoplay the first gallery video when reduced motion is requested', async () => {
