@@ -353,6 +353,36 @@
 		scroll-margin-top: 5.5rem;
 	}
 
+	:global(.project-prose > :is(h1, h2)),
+	:global(.project-prose details > summary > :is(h1, h2)) {
+		color: var(--foreground);
+		font-size: clamp(1.5rem, 1.35rem + 0.6vw, 1.8rem);
+		font-weight: 650;
+		line-height: 1.2;
+		letter-spacing: -0.03em;
+		text-wrap: balance;
+	}
+
+	:global(.project-prose > :is(h1, h2)) {
+		margin-top: 3.75rem;
+		margin-bottom: 1rem;
+	}
+
+	:global(.project-prose > :is(h1, h2):first-child) {
+		margin-top: 0;
+	}
+
+	:global(.project-prose > h3) {
+		margin-top: 2.75rem;
+		margin-bottom: 0.75rem;
+		color: var(--foreground);
+		font-size: 1.25rem;
+		font-weight: 600;
+		line-height: 1.3;
+		letter-spacing: -0.02em;
+		text-wrap: balance;
+	}
+
 	:global(.project-hover-note) {
 		appearance: none;
 		margin: 0;
