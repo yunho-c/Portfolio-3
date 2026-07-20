@@ -34,8 +34,10 @@
 				</p>
 				<p>
 					I am a graduate student completing an M.S. degree in Robotics at Georgia Tech,
-					advised by Shreyas Kousik. Previously, I received a bachelor’s degree in mechanical
-					engineering, with a minor in psychology, at Georgia Tech.
+					advised by <a href="https://www.shreyaskousik.com/" class="inline-link"
+						>Shreyas Kousik</a
+					>. Previously, I received a bachelor’s degree in mechanical engineering, with a minor in
+					psychology, at Georgia Tech.
 				</p>
 				<p class="text-muted-foreground">
 					I like to run, listen to music, read webtoons, take photos, and play sim racing games.
