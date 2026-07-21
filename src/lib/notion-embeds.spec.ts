@@ -1,0 +1,121 @@
+import { describe, expect, it } from 'vitest';
+import { getNotionMediaItem, renderNotionMediaBlock } from './notion-embeds';
+
+describe('renderNotionMediaBlock', () => {
+	it('renders Notion images as centered captioned figures', () => {
+		const html = renderNotionMediaBlock({
+			type: 'image',
+			image: {
+				type: 'external',
+				external: { url: 'https://assets.yunhocho.com/images/oimg.png' },
+				caption: [{ plain_text: 'OIMG quality comparison' }]
+			}
+		});
+
+		expect(html).toContain('class="project-image"');
+		expect(html).toContain('class="project-image__media"');
+		expect(html).toContain('src="https://assets.yunhocho.com/images/oimg.png"');
+		expect(html).toContain('alt="OIMG quality comparison"');
+		expect(html).toContain('loading="lazy" decoding="async"');
+		expect(html).toContain(
+			'<figcaption class="project-image__caption">OIMG quality comparison</figcaption>'
+		);
+	});
+
+	it('renders video-like embed URLs as native video figures', () => {
+		const html = renderNotionMediaBlock({
+			type: 'embed',
+			embed: {
+				url: 'https://assets.yunhocho.com/videos/OIMG_macOS_Finder.mov',
+				caption: [{ plain_text: 'OIMG Finder integration' }]
+			}
+		});
+
+		expect(html).toContain('class="project-embed project-embed--video"');
+		expect(html).toContain('src="https://assets.yunhocho.com/videos/OIMG_macOS_Finder.mov"');
+		expect(html).toContain('controls playsinline preload="metadata"');
+		expect(html).toContain('>OIMG Finder integration</figcaption>');
+		expect(html).not.toContain('<iframe');
+	});
+
+	it('renders webpage embeds as lazy, sandboxed iframes', () => {
+		const html = renderNotionMediaBlock({
+			type: 'embed',
+			embed: {
+				url: 'https://embeds.yunhocho.com/tiplets/concept-demo/',
+				caption: [{ plain_text: 'TipLets concept demo' }]
+			}
+		});
+
+		expect(html).toContain('class="project-embed project-embed--iframe"');
+		expect(html).toContain('src="https://embeds.yunhocho.com/tiplets/concept-demo/"');
+		expect(html).toContain('title="TipLets concept demo"');
+		expect(html).toContain('loading="lazy"');
+		expect(html).toContain('sandbox="allow-downloads');
+		expect(html).toContain('fullscreen; gamepad');
+	});
+
+	it('supports native Notion video blocks with external URLs', () => {
+		const html = renderNotionMediaBlock({
+			type: 'video',
+			video: {
+				type: 'external',
+				external: { url: 'https://assets.yunhocho.com/demo.webm' },
+				caption: []
+			}
+		});
+
+		expect(html).toContain('<video');
+		expect(html).toContain('aria-label="demo.webm"');
+	});
+
+	it('escapes captions and rejects non-HTTPS media URLs', () => {
+		const escaped = renderNotionMediaBlock({
+			type: 'embed',
+			embed: {
+				url: 'https://example.com/demo',
+				caption: [{ plain_text: 'Demo <script>alert("x")</script>' }]
+			}
+		});
+		const rejected = renderNotionMediaBlock({
+			type: 'image',
+			image: {
+				type: 'external',
+				external: { url: 'javascript:alert(1)' },
+				caption: []
+			}
+		});
+
+		expect(escaped).toContain('Demo &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;');
+		expect(escaped).not.toContain('<script>');
+		expect(rejected).toBe('');
+	});
+
+	it('normalizes media into serializable gallery items', () => {
+		expect(
+			getNotionMediaItem({
+				type: 'embed',
+				embed: {
+					url: 'https://demos.yunhocho.com/robot/',
+					caption: [{ plain_text: 'Robot demo' }]
+				}
+			})
+		).toEqual({
+			kind: 'iframe',
+			src: 'https://demos.yunhocho.com/robot/',
+			label: 'Robot demo',
+			caption: 'Robot demo',
+			host: 'demos.yunhocho.com'
+		});
+
+		expect(
+			getNotionMediaItem({
+				type: 'image',
+				image: {
+					type: 'external',
+					external: { url: 'http://example.com/insecure.png' }
+				}
+			})
+		).toBeNull();
+	});
+});
