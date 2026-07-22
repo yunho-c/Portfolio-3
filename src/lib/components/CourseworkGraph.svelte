@@ -334,10 +334,10 @@
 			bind:this={svgElement}
 			viewBox={`0 0 ${width} ${height}`}
 			role="img"
-			aria-labelledby="coursework-svg-title coursework-svg-description"
+			aria-label="Course relationship map"
+			aria-describedby="coursework-svg-description"
 			onpointerdown={beginPan}
 		>
-			<title id="coursework-svg-title">Course relationship map</title>
 			<desc id="coursework-svg-description">
 				An interactive force-directed graph of {courses.length} courses. Each course can be
 				focused or selected to reveal its details and related courses.
@@ -451,7 +451,8 @@
 
 	.graph-surface {
 		position: relative;
-		height: clamp(700px, 84vh, 900px);
+		width: 100%;
+		aspect-ratio: 1;
 		overflow: hidden;
 		background: var(--card);
 	}
@@ -551,6 +552,7 @@
 		}
 
 		.graph-surface {
+			aspect-ratio: auto;
 			height: clamp(580px, 78vh, 720px);
 		}
 

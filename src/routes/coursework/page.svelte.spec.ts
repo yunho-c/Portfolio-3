@@ -38,6 +38,8 @@ describe('/coursework/+page.svelte', () => {
 		render(Page, { data: { courses, relations, categories: ['Computing'] }, params: {} });
 
 		await expect.element(page.getByRole('heading', { level: 1, name: 'Coursework' })).toBeVisible();
+		await expect.element(page.getByRole('img', { name: 'Course relationship map' })).toBeVisible();
+		expect(document.querySelector('svg title')).toBeNull();
 		expect(document.querySelectorAll('[data-course-node]')).toHaveLength(2);
 		expect(document.querySelectorAll('[data-course-relation]')).toHaveLength(1);
 		expect(document.querySelector('[aria-label="Course categories"]')).toBeNull();
