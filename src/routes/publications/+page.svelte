@@ -1,3 +1,7 @@
+<script lang="ts">
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+</script>
+
 <svelte:head>
 	<title>Publications - Yunho Cho</title>
 	<meta
@@ -85,14 +89,26 @@
 				</p>
 
 				<div class="mt-6 flex flex-wrap gap-3">
-					<a
-						href="https://assets.yunhocho.com/images/Biosensors%202023%20Poster.jpg"
-						target="_blank"
-						rel="noreferrer"
-						class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-					>
-						View poster
-					</a>
+					<Dialog.Root>
+						<Dialog.Trigger
+							class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+						>
+							View poster
+						</Dialog.Trigger>
+						<Dialog.Content
+							class="max-h-[calc(100vh-2rem)] w-fit max-w-[calc(100vw-2rem)] overflow-auto p-3 pt-10 sm:max-w-[calc(100vw-2rem)]"
+						>
+							<Dialog.Title class="sr-only">Biosensors 2023 poster</Dialog.Title>
+							<Dialog.Description class="sr-only">
+								Poster for the piezoresistive thin-film biopatch project.
+							</Dialog.Description>
+							<img
+								src="https://assets.yunhocho.com/images/Biosensors%202023%20Poster.jpg"
+								alt="Biosensors 2023 poster for the piezoresistive thin-film biopatch project"
+								class="mx-auto block h-auto max-h-[calc(100vh-3.5rem)] w-auto max-w-full rounded-md"
+							/>
+						</Dialog.Content>
+					</Dialog.Root>
 				</div>
 			</section>
 		</div>
