@@ -4,6 +4,7 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import { movable, type MoveDetail } from '$lib/actions/movable';
 	import type { Course, CourseRelation } from '$lib/coursework';
 	import type { Simulation, SimulationLinkDatum, SimulationNodeDatum } from 'd3-force';
 
@@ -15,15 +16,12 @@
 	};
 
 	type GraphTransform = { x: number; y: number; scale: number };
-	type PointerInteraction = {
-		type: 'pan' | 'node';
+	type PanInteraction = {
 		pointerId: number;
 		startX: number;
 		startY: number;
 		originX: number;
 		originY: number;
-		node?: GraphNode;
-		moved: boolean;
 	};
 
 	let {
@@ -43,7 +41,7 @@
 	let hoverId = $state<string | null>(null);
 	let focusId = $state<string | null>(null);
 	let pinnedId = $state<string | null>(null);
-	let interaction: PointerInteraction | null = null;
+	let panInteraction: PanInteraction | null = null;
 	let hoverCloseTimer: number | undefined;
 
 	let activeId = $derived(pinnedId ?? focusId ?? hoverId);
@@ -202,66 +200,70 @@
 		if (!svgElement) return;
 		if (!(event.target instanceof Element) || !event.target.hasAttribute('data-graph-background')) return;
 		pinnedId = null;
-		interaction = {
-			type: 'pan',
+		panInteraction = {
 			pointerId: event.pointerId,
 			startX: event.clientX,
 			startY: event.clientY,
 			originX: transform.x,
-			originY: transform.y,
-			moved: false
+			originY: transform.y
 		};
 		svgElement.setPointerCapture(event.pointerId);
 	}
 
-	function beginNodeDrag(event: PointerEvent, node: GraphNode): void {
-		if (!svgElement) return;
-		event.stopPropagation();
-		node.fx = node.x;
-		node.fy = node.y;
-		simulation?.alphaTarget(0.16).restart();
-		interaction = {
-			type: 'node',
-			pointerId: event.pointerId,
-			startX: event.clientX,
-			startY: event.clientY,
-			originX: node.x ?? 0,
-			originY: node.y ?? 0,
-			node,
-			moved: false
-		};
-		svgElement.setPointerCapture(event.pointerId);
+	function beginNodeMove(node: GraphNode): void {
+		const simulationNode = simulation?.nodes().find((candidate) => candidate.id === node.id) ?? node;
+		simulationNode.fx = simulationNode.x;
+		simulationNode.fy = simulationNode.y;
+	}
+
+	function moveNode(node: GraphNode, movement: MoveDetail): void {
+		const simulationNode = simulation?.nodes().find((candidate) => candidate.id === node.id) ?? node;
+		const nextX = Math.max(
+			30,
+			Math.min(
+				width - 30,
+				(simulationNode.fx ?? simulationNode.x ?? 0) + movement.dx / transform.scale
+			)
+		);
+		const nextY = Math.max(
+			28,
+			Math.min(
+				height - 20,
+				(simulationNode.fy ?? simulationNode.y ?? 0) + movement.dy / transform.scale
+			)
+		);
+
+		simulationNode.x = nextX;
+		simulationNode.y = nextY;
+		simulationNode.fx = nextX;
+		simulationNode.fy = nextY;
+		nodes = [...(simulation?.nodes() ?? nodes)];
+		simulation?.alphaTarget(0.12).restart();
+	}
+
+	function endNodeMove(node: GraphNode, moved: boolean): void {
+		const simulationNode = simulation?.nodes().find((candidate) => candidate.id === node.id) ?? node;
+		simulationNode.fx = null;
+		simulationNode.fy = null;
+		simulation?.alphaTarget(0);
+		if (moved) simulation?.alpha(0.3).restart();
+		else pinnedId = pinnedId === node.id ? null : node.id;
 	}
 
 	function movePointer(event: PointerEvent): void {
-		if (!interaction || interaction.pointerId !== event.pointerId) return;
-		const deltaX = event.clientX - interaction.startX;
-		const deltaY = event.clientY - interaction.startY;
-		if (Math.hypot(deltaX, deltaY) > 4) interaction.moved = true;
-
-		if (interaction.type === 'pan') {
-			transform = {
-				...transform,
-				x: interaction.originX + deltaX,
-				y: interaction.originY + deltaY
-			};
-		} else if (interaction.node) {
-			interaction.node.fx = interaction.originX + deltaX / transform.scale;
-			interaction.node.fy = interaction.originY + deltaY / transform.scale;
-		}
+		if (!panInteraction || panInteraction.pointerId !== event.pointerId) return;
+		transform = {
+			...transform,
+			x: panInteraction.originX + event.clientX - panInteraction.startX,
+			y: panInteraction.originY + event.clientY - panInteraction.startY
+		};
 	}
 
 	function endPointer(event: PointerEvent): void {
 		if (!svgElement) return;
-		if (!interaction || interaction.pointerId !== event.pointerId) return;
-		if (interaction.type === 'node' && interaction.node) {
-			interaction.node.fx = null;
-			interaction.node.fy = null;
-			simulation?.alphaTarget(0);
-			if (!interaction.moved) pinnedId = pinnedId === interaction.node.id ? null : interaction.node.id;
-		}
+		if (!panInteraction || panInteraction.pointerId !== event.pointerId) return;
 		if (svgElement.hasPointerCapture(event.pointerId)) svgElement.releasePointerCapture(event.pointerId);
-		interaction = null;
+		panInteraction = null;
 	}
 
 	function showHover(id: string): void {
@@ -309,12 +311,18 @@
 			}
 		};
 		window.addEventListener('keydown', handleWindowKeydown);
+		window.addEventListener('pointermove', movePointer);
+		window.addEventListener('pointerup', endPointer);
+		window.addEventListener('pointercancel', endPointer);
 
 		return () => {
 			simulation?.stop();
 			resizeObserver.disconnect();
 			svg.removeEventListener('wheel', handleWheel);
 			window.removeEventListener('keydown', handleWindowKeydown);
+			window.removeEventListener('pointermove', movePointer);
+			window.removeEventListener('pointerup', endPointer);
+			window.removeEventListener('pointercancel', endPointer);
 			if (hoverCloseTimer !== undefined) window.clearTimeout(hoverCloseTimer);
 		};
 	});
@@ -328,9 +336,6 @@
 			role="img"
 			aria-labelledby="coursework-svg-title coursework-svg-description"
 			onpointerdown={beginPan}
-			onpointermove={movePointer}
-			onpointerup={endPointer}
-			onpointercancel={endPointer}
 		>
 			<title id="coursework-svg-title">Course relationship map</title>
 			<desc id="coursework-svg-description">
@@ -367,7 +372,11 @@
 							tabindex="0"
 							aria-label={`${node.number}, ${node.name}`}
 							aria-pressed={pinnedId === node.id}
-							onpointerdown={(event) => beginNodeDrag(event, node)}
+							use:movable={{
+								onMoveStart: () => beginNodeMove(node),
+								onMove: (movement) => moveNode(node, movement),
+								onMoveEnd: ({ moved }) => endNodeMove(node, moved)
+							}}
 							onpointerenter={() => showHover(node.id)}
 							onpointerleave={scheduleHoverClose}
 							onfocus={() => (focusId = node.id)}
@@ -442,8 +451,7 @@
 
 	.graph-surface {
 		position: relative;
-		height: min(78vh, 760px);
-		min-height: 620px;
+		height: clamp(700px, 84vh, 900px);
 		overflow: hidden;
 		background: var(--card);
 	}
@@ -543,8 +551,7 @@
 		}
 
 		.graph-surface {
-			height: 70vh;
-			min-height: 520px;
+			height: clamp(580px, 78vh, 720px);
 		}
 
 		:global(.course-card) {
