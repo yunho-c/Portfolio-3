@@ -1,0 +1,31 @@
+﻿Course Number,Name,Category,Description,Core Course Content (bullet points),Icon ID,Prerequisites (Course Number),Manual Relation,Featured
+ECE 3710,Circuits & Electronics,Electronics,,,,,"Instrumentation & Electronics Lab (https://app.notion.com/p/Instrumentation-Electronics-Lab-1cf2acb28f778006a878e1a4aadcf18e?pvs=21), Electronics Packaging & Assembly (https://app.notion.com/p/Electronics-Packaging-Assembly-1cf2acb28f778082a444eb0925370b57?pvs=21)",No
+ECE 3741,Instrumentation & Electronics Lab,Electronics,,,,,"Circuits & Electronics (https://app.notion.com/p/Circuits-Electronics-1cf2acb28f7780089016ceb7d27ba77a?pvs=21), Biomedical Instrumentation (https://app.notion.com/p/Biomedical-Instrumentation-1cf2acb28f778074ba38dc7ed99c89df?pvs=21)",No
+ECE 4754,Electronics Packaging & Assembly,Electronics,,,,,Circuits & Electronics (https://app.notion.com/p/Circuits-Electronics-1cf2acb28f7780089016ceb7d27ba77a?pvs=21),No
+ECE 4781,Biomedical Instrumentation,"Electronics, HCI",,,,,Instrumentation & Electronics Lab (https://app.notion.com/p/Instrumentation-Electronics-Lab-1cf2acb28f778006a878e1a4aadcf18e?pvs=21),No
+CS 3750,User Interface Design,HCI,,,,,Personal Health Informatics (https://app.notion.com/p/Personal-Health-Informatics-1cf2acb28f77802c8198d19a3e324ade?pvs=21),No
+CS 4803,Personal Health Informatics,HCI,,,,,User Interface Design (https://app.notion.com/p/User-Interface-Design-1cf2acb28f778018bc67c51d4a5fb32d?pvs=21),No
+LING 2100,Intro to Linguistics Theory,HCI,,,,,,No
+PSYC 1101,General Psychology,Psychology,,,,,Personality Theory (https://app.notion.com/p/Personality-Theory-1cf2acb28f7780c98526cb4ceb6dc231?pvs=21),No
+PSYC 2240,Personality Theory,Psychology,,,,,"General Psychology (https://app.notion.com/p/General-Psychology-1cf2acb28f7780fca803d1a454759d9c?pvs=21), Neuroscience in Atypical Development (https://app.notion.com/p/Neuroscience-in-Atypical-Development-1cf2acb28f77804b87abe0300c5d9c05?pvs=21)",No
+PHYS 4803 B,Physics of Cognition,Neuroscience,,,,,"AI for Cognitive Science (https://app.notion.com/p/AI-for-Cognitive-Science-1cf2acb28f77805ea554ff0d457618e6?pvs=21), Computational Neuroscience (https://app.notion.com/p/Computational-Neuroscience-1cf2acb28f7780b59c0fcdb628799f21?pvs=21), Neuroscience in Atypical Development (https://app.notion.com/p/Neuroscience-in-Atypical-Development-1cf2acb28f77804b87abe0300c5d9c05?pvs=21)",No
+PSYC 4803 F,AI for Cognitive Science,Neuroscience,,,,,Physics of Cognition (https://app.notion.com/p/Physics-of-Cognition-1cf2acb28f77805ead72f9bfedba604c?pvs=21),No
+NEUR 4803,Computational Neuroscience,Neuroscience,,,,,Physics of Cognition (https://app.notion.com/p/Physics-of-Cognition-1cf2acb28f77805ead72f9bfedba604c?pvs=21),No
+PSYC 4803 A,Neuroscience in Atypical Development,Neuroscience,,,,,"Physics of Cognition (https://app.notion.com/p/Physics-of-Cognition-1cf2acb28f77805ead72f9bfedba604c?pvs=21), Personality Theory (https://app.notion.com/p/Personality-Theory-1cf2acb28f7780c98526cb4ceb6dc231?pvs=21)",No
+AE 4803 R,Robotics and Autonomy,Control Theory,,,,,System Dynamics (https://app.notion.com/p/System-Dynamics-1cf2acb28f77809c9039c0a084df1bc8?pvs=21),No
+ME 3017,System Dynamics,Control Theory,,,,,Robotics and Autonomy (https://app.notion.com/p/Robotics-and-Autonomy-1cf2acb28f7780e5a98be85a43c17005?pvs=21),No
+ME 3340,Fluid Mechanics,Mechanical Engineering,,,,,Thermodynamics (https://app.notion.com/p/Thermodynamics-1cf2acb28f77806a980ff67231adf515?pvs=21),No
+ME 3322,Thermodynamics,Mechanical Engineering,,,,,"Heat Transfer (https://app.notion.com/p/Heat-Transfer-1cf2acb28f778056b5e0d97d66907bbb?pvs=21), Fluid Mechanics (https://app.notion.com/p/Fluid-Mechanics-1cf2acb28f778028b566fd931d58a541?pvs=21)",No
+ME 3345,Heat Transfer,Mechanical Engineering,,,,,Thermodynamics (https://app.notion.com/p/Thermodynamics-1cf2acb28f77806a980ff67231adf515?pvs=21),No
+ME 3180,Machine Design,Mechanical Engineering,,,,,,No
+LMC 3208,Documentary Filming,Communication,,,,,,No
+PUBP 4140,Foundations of Leadership,Communication,,,,,,No
+CX 2699,Idea to Prototype,Entrepreneurship,,,,,Startup Lab (https://app.notion.com/p/Startup-Lab-1cf2acb28f7780bca95be1eed23b4097?pvs=21),No
+CX 2701,Startup Lab,Entrepreneurship,,,,,Idea to Prototype (https://app.notion.com/p/Idea-to-Prototype-1cf2acb28f7780178e49dcf38b12134b?pvs=21),No
+CS 1371,Computing for Engineers,Computing,,,,,Numerical Methods (https://app.notion.com/p/Numerical-Methods-1cf2acb28f778012a21cc520fcdabc9b?pvs=21),No
+ME 2016,Numerical Methods,Computing,,,,,Computing for Engineers (https://app.notion.com/p/Computing-for-Engineers-1cf2acb28f77803cb0c6d67d60c68fe2?pvs=21),No
+,,,,,,,,No
+,,,,,,,,No
+,,,,,,,,No
+,,,,,,,,No
+,,,,,,,,No
