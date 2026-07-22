@@ -49,6 +49,7 @@
 	let entranceMode = $state<EntranceMode>('distributed');
 	let labelMode = $state<LabelMode>('code');
 	let labelTextSize = $state(10);
+	let wrapTitles = $state(false);
 	let panInteraction: PanInteraction | null = null;
 	let hoverCloseTimer: number | undefined;
 	let releaseTimer: number | undefined;
@@ -74,6 +75,8 @@
 	const preferencesKey = 'coursework-graph-preferences';
 	const minimumLabelTextSize = 8;
 	const maximumLabelTextSize = 18;
+	const labelLineLimit = 20;
+	const labelLineHeight = 1.15;
 
 	function normalizeLabelTextSize(value: number): number {
 		return Math.min(maximumLabelTextSize, Math.max(minimumLabelTextSize, Math.round(value)));
@@ -94,6 +97,7 @@
 			if (typeof saved.labelTextSize === 'number' && Number.isFinite(saved.labelTextSize)) {
 				labelTextSize = normalizeLabelTextSize(saved.labelTextSize);
 			}
+			if (typeof saved.wrapTitles === 'boolean') wrapTitles = saved.wrapTitles;
 		} catch {
 			// Ignore unavailable storage and malformed user preferences.
 		}
@@ -103,7 +107,7 @@
 		try {
 			window.localStorage.setItem(
 				preferencesKey,
-				JSON.stringify({ entranceMode, labelMode, labelTextSize })
+				JSON.stringify({ entranceMode, labelMode, labelTextSize, wrapTitles })
 			);
 		} catch {
 			// Settings remain available for the current page when storage is unavailable.
@@ -117,6 +121,39 @@
 
 	function labelFor(course: Course): string {
 		return labelMode === 'title' ? course.name : course.number;
+	}
+
+	function wrapLabel(label: string): string[] {
+		const words = label.trim().split(/\s+/);
+		const lines: string[] = [];
+		let line = '';
+
+		for (const word of words) {
+			const nextLine = line ? `${line} ${word}` : word;
+			if (line && nextLine.length > labelLineLimit) {
+				lines.push(line);
+				line = word;
+			} else {
+				line = nextLine;
+			}
+		}
+
+		if (line) lines.push(line);
+		return lines.length ? lines : [''];
+	}
+
+	function labelLinesFor(course: Course): string[] {
+		const label = labelFor(course);
+		return labelMode === 'title' && wrapTitles ? wrapLabel(label) : [label];
+	}
+
+	function labelY(course: Course): number {
+		return -9 - (labelLinesFor(course).length - 1) * labelTextSize * labelLineHeight;
+	}
+
+	function wrappedLabelHorizontalRadius(course: Course): number {
+		const longestLine = Math.max(...labelLinesFor(course).map((line) => line.length));
+		return Math.max(30 * (labelTextSize / 10), longestLine * labelTextSize * 0.26 + 6);
 	}
 
 	function nodeId(node: string | GraphNode): string {
@@ -178,6 +215,11 @@
 	function collisionRadius(node: GraphNode): number {
 		const textScale = labelTextSize / 10;
 		if (labelMode === 'code') return 24 * textScale;
+		if (wrapTitles) {
+			const lines = labelLinesFor(node);
+			const verticalRadius = 18 + lines.length * labelTextSize * labelLineHeight;
+			return Math.max(wrappedLabelHorizontalRadius(node), verticalRadius);
+		}
 		return Math.min(90, Math.max(30, node.name.length * 2.2)) * textScale;
 	}
 
@@ -187,8 +229,18 @@
 
 	function clampNodesToCanvas(simulationNodes: GraphNode[]): void {
 		for (const node of simulationNodes) {
-			node.x = Math.max(30, Math.min(width - 30, node.x ?? width / 2));
-			node.y = Math.max(28, Math.min(height - 20, node.y ?? height / 2));
+			const lineCount = labelLinesFor(node).length;
+			const horizontalInset =
+				labelMode === 'title' && wrapTitles ? wrappedLabelHorizontalRadius(node) : 30;
+			const topInset = Math.max(
+				28,
+				12 + labelTextSize + (lineCount - 1) * labelTextSize * labelLineHeight
+			);
+			node.x = Math.max(
+				horizontalInset,
+				Math.min(width - horizontalInset, node.x ?? width / 2)
+			);
+			node.y = Math.max(topInset, Math.min(height - 20, node.y ?? height / 2));
 		}
 	}
 
@@ -254,6 +306,12 @@
 	function selectLabelMode(mode: LabelMode): void {
 		if (labelMode === mode) return;
 		labelMode = mode;
+		savePreferences();
+		simulation?.force('collision', createCollisionForce()).alpha(0.4).restart();
+	}
+
+	function toggleTitleWrapping(): void {
+		wrapTitles = !wrapTitles;
 		savePreferences();
 		simulation?.force('collision', createCollisionForce()).alpha(0.4).restart();
 	}
@@ -491,6 +549,7 @@
 		data-entrance-mode={entranceMode}
 		data-label-mode={labelMode}
 		data-label-size={labelTextSize}
+		data-wrap-titles={wrapTitles}
 		style={`--course-label-size: ${labelTextSize}px`}
 		bind:this={graphRoot}
 	>
@@ -551,8 +610,10 @@
 						>
 							<circle class="node-hit" r="14"></circle>
 							<circle class="node-dot" r="4" fill={colorFor(node)}></circle>
-							<text y="-9" text-anchor="middle">
-								{labelFor(node)}
+							<text y={labelY(node)} text-anchor="middle">
+								{#each labelLinesFor(node) as line, lineIndex}
+									<tspan x="0" dy={lineIndex === 0 ? 0 : `${labelLineHeight}em`}>{line}</tspan>
+								{/each}
 							</text>
 						</g>
 					{/each}
@@ -616,6 +677,19 @@
 								onclick={() => selectLabelMode('title')}
 							>
 								Course title
+							</Button>
+						</div>
+						<div class="mt-1 grid grid-cols-[1fr_auto] items-center gap-3">
+							<span class="text-sm">Wrap titles</span>
+							<Button
+								variant={wrapTitles ? 'default' : 'outline'}
+								size="sm"
+								class="w-20"
+								aria-label="Wrap titles"
+								aria-pressed={wrapTitles}
+								onclick={toggleTitleWrapping}
+							>
+								{wrapTitles ? 'On' : 'Off'}
 							</Button>
 						</div>
 					</fieldset>

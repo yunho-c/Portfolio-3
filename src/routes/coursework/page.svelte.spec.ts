@@ -19,7 +19,7 @@ const courses: Course[] = [
 	{
 		id: 'CS 2000',
 		number: 'CS 2000',
-		name: 'Systems',
+		name: 'Systems Architecture and Design',
 		categories: ['Computing'],
 		description: 'Systems course details.',
 		coreContent: [],
@@ -72,6 +72,14 @@ describe('/coursework/+page.svelte', () => {
 			'aria-pressed',
 			'true'
 		);
+		const wrapTitles = page.getByRole('button', { name: 'Wrap titles' });
+		await wrapTitles.click();
+		await expect.element(wrapTitles).toHaveAttribute('aria-pressed', 'true');
+		expect(
+			Array.from(document.querySelectorAll('[data-course-node="CS 2000"] tspan')).map((line) =>
+				line.textContent?.trim()
+			)
+		).toEqual(['Systems Architecture', 'and Design']);
 		const textSize = page.getByLabelText('Text size');
 		await textSize.fill('14');
 		await expect.element(page.getByRole('img', { name: 'Course relationship map' })).toHaveAttribute(
@@ -83,7 +91,7 @@ describe('/coursework/+page.svelte', () => {
 				.fontSize
 		).toBe('14px');
 		expect(JSON.parse(window.localStorage.getItem('coursework-graph-preferences') ?? '{}')).toMatchObject(
-			{ labelTextSize: 14 }
+			{ labelTextSize: 14, wrapTitles: true }
 		);
 		await page.getByRole('button', { name: 'Explosion' }).click();
 		await expect.element(page.getByRole('button', { name: 'Explosion' })).toHaveAttribute(
