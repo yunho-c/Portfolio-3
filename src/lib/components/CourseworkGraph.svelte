@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY } from 'd3-force';
+	import SlidersHorizontalIcon from '@lucide/svelte/icons/sliders-horizontal';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { movable, type MoveDetail } from '$lib/actions/movable';
 	import type { Course, CourseRelation } from '$lib/coursework';
 	import type { Simulation, SimulationLinkDatum, SimulationNodeDatum } from 'd3-force';
@@ -16,6 +18,8 @@
 	};
 
 	type GraphTransform = { x: number; y: number; scale: number };
+	type EntranceMode = 'distributed' | 'explosion';
+	type LabelMode = 'code' | 'title';
 	type PanInteraction = {
 		pointerId: number;
 		startX: number;
@@ -41,8 +45,13 @@
 	let hoverId = $state<string | null>(null);
 	let focusId = $state<string | null>(null);
 	let pinnedId = $state<string | null>(null);
+	let releasingId = $state<string | null>(null);
+	let entranceMode = $state<EntranceMode>('distributed');
+	let labelMode = $state<LabelMode>('code');
 	let panInteraction: PanInteraction | null = null;
 	let hoverCloseTimer: number | undefined;
+	let releaseTimer: number | undefined;
+	let prefersReducedMotion = false;
 
 	let activeId = $derived(pinnedId ?? focusId ?? hoverId);
 	let activeCourse = $derived(courses.find((course) => course.id === activeId) ?? null);
@@ -61,10 +70,40 @@
 		'#bcbd22',
 		'#17becf'
 	];
+	const preferencesKey = 'coursework-graph-preferences';
+
+	function loadPreferences(): void {
+		try {
+			const saved = JSON.parse(window.localStorage.getItem(preferencesKey) ?? '{}') as Record<
+				string,
+				unknown
+			>;
+			if (saved.entranceMode === 'distributed' || saved.entranceMode === 'explosion') {
+				entranceMode = saved.entranceMode;
+			}
+			if (saved.labelMode === 'code' || saved.labelMode === 'title') {
+				labelMode = saved.labelMode;
+			}
+		} catch {
+			// Ignore unavailable storage and malformed user preferences.
+		}
+	}
+
+	function savePreferences(): void {
+		try {
+			window.localStorage.setItem(preferencesKey, JSON.stringify({ entranceMode, labelMode }));
+		} catch {
+			// Settings remain available for the current page when storage is unavailable.
+		}
+	}
 
 	function colorFor(course: Course): string {
 		const categoryIndex = Math.max(0, categories.indexOf(course.categories[0]));
 		return categoryPalette[categoryIndex % categoryPalette.length];
+	}
+
+	function labelFor(course: Course): string {
+		return labelMode === 'title' ? course.name : course.number;
 	}
 
 	function nodeId(node: string | GraphNode): string {
@@ -111,6 +150,27 @@
 		};
 	}
 
+	function initialPosition(course: Course, index: number): { x: number; y: number; vx?: number; vy?: number } {
+		if (entranceMode === 'distributed') return categoryAnchor(course.categories[0], index);
+		const angle = index * Math.PI * (3 - Math.sqrt(5));
+		const radius = 4 + (index % 5) * 1.5;
+		return {
+			x: width / 2 + Math.cos(angle) * radius,
+			y: height / 2 + Math.sin(angle) * radius,
+			vx: Math.cos(angle) * 2,
+			vy: Math.sin(angle) * 2
+		};
+	}
+
+	function collisionRadius(node: GraphNode): number {
+		if (labelMode === 'code') return 24;
+		return Math.min(90, Math.max(30, node.name.length * 2.2));
+	}
+
+	function createCollisionForce() {
+		return forceCollide<GraphNode>().radius(collisionRadius).strength(0.9);
+	}
+
 	function clampNodesToCanvas(simulationNodes: GraphNode[]): void {
 		for (const node of simulationNodes) {
 			node.x = Math.max(30, Math.min(width - 30, node.x ?? width / 2));
@@ -119,11 +179,12 @@
 	}
 
 	function createSimulation(reducedMotion: boolean): void {
+		cancelNodeRelease();
 		simulation?.stop();
 
 		const simulationNodes = courses.map((course, index) => {
-			const anchor = categoryAnchor(course.categories[0], index);
-			return { ...course, x: anchor.x, y: anchor.y } satisfies GraphNode;
+			const position = initialPosition(course, index);
+			return { ...course, ...position } satisfies GraphNode;
 		});
 		const simulationLinks = relations.map((relation) => ({ ...relation })) as GraphLink[];
 
@@ -139,7 +200,7 @@
 			)
 			.force('charge', forceManyBody<GraphNode>().strength(-300).distanceMax(380))
 			.force('center', forceCenter(width / 2, height / 2).strength(0.7))
-			.force('collision', forceCollide<GraphNode>().radius(24).strength(0.9))
+			.force('collision', createCollisionForce())
 			.force(
 				'category-x',
 				forceX<GraphNode>((node) => categoryAnchor(node.categories[0], courses.indexOf(node)).x).strength(
@@ -165,6 +226,22 @@
 			nodes = [...simulationNodes];
 			links = [...simulationLinks];
 		}
+	}
+
+	function selectEntranceMode(mode: EntranceMode): void {
+		entranceMode = mode;
+		transform = { x: 0, y: 0, scale: 1 };
+		pinnedId = null;
+		hoverId = null;
+		savePreferences();
+		createSimulation(prefersReducedMotion);
+	}
+
+	function selectLabelMode(mode: LabelMode): void {
+		if (labelMode === mode) return;
+		labelMode = mode;
+		savePreferences();
+		simulation?.force('collision', createCollisionForce()).alpha(0.4).restart();
 	}
 
 	function updateSimulationBounds(): void {
@@ -211,6 +288,7 @@
 	}
 
 	function beginNodeMove(node: GraphNode): void {
+		cancelNodeRelease();
 		const simulationNode = simulation?.nodes().find((candidate) => candidate.id === node.id) ?? node;
 		simulationNode.fx = simulationNode.x;
 		simulationNode.fy = simulationNode.y;
@@ -243,11 +321,42 @@
 
 	function endNodeMove(node: GraphNode, moved: boolean): void {
 		const simulationNode = simulation?.nodes().find((candidate) => candidate.id === node.id) ?? node;
-		simulationNode.fx = null;
-		simulationNode.fy = null;
-		simulation?.alphaTarget(0);
-		if (moved) simulation?.alpha(0.3).restart();
-		else pinnedId = pinnedId === node.id ? null : node.id;
+		if (!moved) {
+			simulationNode.fx = null;
+			simulationNode.fy = null;
+			simulation?.alphaTarget(0);
+			pinnedId = pinnedId === node.id ? null : node.id;
+			return;
+		}
+
+		const activeSimulation = simulation;
+		releasingId = node.id;
+		simulationNode.vx = 0;
+		simulationNode.vy = 0;
+		activeSimulation?.alpha(0.22).alphaTarget(0.07).restart();
+		releaseTimer = window.setTimeout(() => {
+			if (simulation !== activeSimulation || releasingId !== node.id) return;
+			simulationNode.fx = null;
+			simulationNode.fy = null;
+			simulationNode.vx = 0;
+			simulationNode.vy = 0;
+			releasingId = null;
+			releaseTimer = undefined;
+			activeSimulation?.alphaTarget(0).alpha(0.14).restart();
+		}, 140);
+	}
+
+	function cancelNodeRelease(): void {
+		if (releaseTimer !== undefined) window.clearTimeout(releaseTimer);
+		releaseTimer = undefined;
+		if (releasingId) {
+			const releasingNode = simulation?.nodes().find((candidate) => candidate.id === releasingId);
+			if (releasingNode) {
+				releasingNode.fx = null;
+				releasingNode.fy = null;
+			}
+		}
+		releasingId = null;
 	}
 
 	function movePointer(event: PointerEvent): void {
@@ -295,13 +404,18 @@
 		const root = graphRoot;
 		const svg = svgElement;
 		const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const initialBounds = root.getBoundingClientRect();
+		width = Math.max(320, initialBounds.width);
+		height = Math.max(460, initialBounds.height);
+		prefersReducedMotion = mediaQuery.matches;
+		loadPreferences();
 		const resizeObserver = new ResizeObserver(([entry]) => {
 			width = Math.max(320, entry.contentRect.width);
 			height = Math.max(460, entry.contentRect.height);
 			updateSimulationBounds();
 		});
 		resizeObserver.observe(root);
-		createSimulation(mediaQuery.matches);
+		createSimulation(prefersReducedMotion);
 		svg.addEventListener('wheel', handleWheel, { passive: false });
 
 		const handleWindowKeydown = (event: KeyboardEvent) => {
@@ -316,6 +430,7 @@
 		window.addEventListener('pointercancel', endPointer);
 
 		return () => {
+			cancelNodeRelease();
 			simulation?.stop();
 			resizeObserver.disconnect();
 			svg.removeEventListener('wheel', handleWheel);
@@ -329,7 +444,12 @@
 </script>
 
 <Card.Root class="graph-frame gap-0 py-0 shadow-xl">
-	<div class="graph-surface" bind:this={graphRoot}>
+	<div
+		class="graph-surface"
+		data-entrance-mode={entranceMode}
+		data-label-mode={labelMode}
+		bind:this={graphRoot}
+	>
 		<svg
 			bind:this={svgElement}
 			viewBox={`0 0 ${width} ${height}`}
@@ -363,6 +483,7 @@
 					{#each nodes as node (node.id)}
 						<g
 							data-course-node={node.id}
+							data-releasing={releasingId === node.id ? 'true' : undefined}
 							class="course-node"
 							class:active={node.id === activeId}
 							class:related={Boolean(activeId) && node.id !== activeId && isAdjacent(node.id)}
@@ -385,12 +506,77 @@
 						>
 							<circle class="node-hit" r="14"></circle>
 							<circle class="node-dot" r="4" fill={colorFor(node)}></circle>
-							<text y="-9" text-anchor="middle">{node.number}</text>
+							<text y="-9" text-anchor="middle">
+								{labelFor(node)}
+							</text>
 						</g>
 					{/each}
 				</g>
 			</g>
 		</svg>
+
+		<Dialog.Root>
+			<Dialog.Trigger
+				class={`${buttonVariants({ variant: 'ghost', size: 'icon' })} graph-settings-trigger`}
+				aria-label="Graph settings"
+			>
+				<SlidersHorizontalIcon />
+			</Dialog.Trigger>
+			<Dialog.Content class="sm:max-w-sm">
+				<Dialog.Header>
+					<Dialog.Title>Graph settings</Dialog.Title>
+					<Dialog.Description class="sr-only">
+						Configure the graph entrance and course labels.
+					</Dialog.Description>
+				</Dialog.Header>
+
+				<div class="grid gap-5">
+					<fieldset class="grid gap-2">
+						<legend class="text-sm font-medium">Entrance</legend>
+						<div class="grid grid-cols-2 gap-2">
+							<Button
+								variant={entranceMode === 'distributed' ? 'default' : 'outline'}
+								size="sm"
+								aria-pressed={entranceMode === 'distributed'}
+								onclick={() => selectEntranceMode('distributed')}
+							>
+								Distributed
+							</Button>
+							<Button
+								variant={entranceMode === 'explosion' ? 'default' : 'outline'}
+								size="sm"
+								aria-pressed={entranceMode === 'explosion'}
+								onclick={() => selectEntranceMode('explosion')}
+							>
+								Explosion
+							</Button>
+						</div>
+					</fieldset>
+
+					<fieldset class="grid gap-2">
+						<legend class="text-sm font-medium">Labels</legend>
+						<div class="grid grid-cols-2 gap-2">
+							<Button
+								variant={labelMode === 'code' ? 'default' : 'outline'}
+								size="sm"
+								aria-pressed={labelMode === 'code'}
+								onclick={() => selectLabelMode('code')}
+							>
+								Course code
+							</Button>
+							<Button
+								variant={labelMode === 'title' ? 'default' : 'outline'}
+								size="sm"
+								aria-pressed={labelMode === 'title'}
+								onclick={() => selectLabelMode('title')}
+							>
+								Course title
+							</Button>
+						</div>
+					</fieldset>
+				</div>
+			</Dialog.Content>
+		</Dialog.Root>
 
 		{#if activeCourse}
 			<Card.Root
@@ -530,6 +716,24 @@
 		font-weight: 400;
 		pointer-events: none;
 		transition: opacity 180ms ease, font-weight 180ms ease;
+	}
+
+	:global(.graph-settings-trigger) {
+		position: absolute;
+		right: 0.75rem;
+		bottom: 0.75rem;
+		z-index: 10;
+		width: 2rem;
+		height: 2rem;
+		opacity: 0;
+		color: var(--muted-foreground);
+		transition: opacity 160ms ease;
+	}
+
+	:global(.graph-settings-trigger:hover),
+	:global(.graph-settings-trigger:focus-visible),
+	:global(.graph-settings-trigger[data-state='open']) {
+		opacity: 1;
 	}
 
 	.course-node.active text,

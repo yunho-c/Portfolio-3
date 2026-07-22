@@ -35,6 +35,7 @@ const relations: CourseRelation[] = [
 
 describe('/coursework/+page.svelte', () => {
 	it('renders the graph and exposes course details through pointer and keyboard interaction', async () => {
+		window.localStorage.removeItem('coursework-graph-preferences');
 		render(Page, { data: { courses, relations, categories: ['Computing'] }, params: {} });
 
 		await expect.element(page.getByRole('heading', { level: 1, name: 'Coursework' })).toBeVisible();
@@ -60,5 +61,24 @@ describe('/coursework/+page.svelte', () => {
 
 		window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 		await expect.element(foundations).toHaveAttribute('aria-pressed', 'false');
+
+		await page.getByRole('button', { name: 'Graph settings' }).click();
+		await expect.element(page.getByRole('heading', { name: 'Graph settings' })).toBeVisible();
+		await page.getByRole('button', { name: 'Course title' }).click();
+		expect(document.querySelector('[data-course-node="CS 1000"] text')?.textContent?.trim()).toBe(
+			'Foundations'
+		);
+		await expect.element(page.getByRole('button', { name: 'Course title' })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		await page.getByRole('button', { name: 'Explosion' }).click();
+		await expect.element(page.getByRole('button', { name: 'Explosion' })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		expect(document.querySelector('.graph-surface')?.getAttribute('data-entrance-mode')).toBe(
+			'explosion'
+		);
 	});
 });
