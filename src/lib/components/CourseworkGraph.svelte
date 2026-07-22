@@ -48,6 +48,7 @@
 	let releasingId = $state<string | null>(null);
 	let entranceMode = $state<EntranceMode>('distributed');
 	let labelMode = $state<LabelMode>('code');
+	let labelTextSize = $state(10);
 	let panInteraction: PanInteraction | null = null;
 	let hoverCloseTimer: number | undefined;
 	let releaseTimer: number | undefined;
@@ -71,6 +72,12 @@
 		'#17becf'
 	];
 	const preferencesKey = 'coursework-graph-preferences';
+	const minimumLabelTextSize = 8;
+	const maximumLabelTextSize = 18;
+
+	function normalizeLabelTextSize(value: number): number {
+		return Math.min(maximumLabelTextSize, Math.max(minimumLabelTextSize, Math.round(value)));
+	}
 
 	function loadPreferences(): void {
 		try {
@@ -84,6 +91,9 @@
 			if (saved.labelMode === 'code' || saved.labelMode === 'title') {
 				labelMode = saved.labelMode;
 			}
+			if (typeof saved.labelTextSize === 'number' && Number.isFinite(saved.labelTextSize)) {
+				labelTextSize = normalizeLabelTextSize(saved.labelTextSize);
+			}
 		} catch {
 			// Ignore unavailable storage and malformed user preferences.
 		}
@@ -91,7 +101,10 @@
 
 	function savePreferences(): void {
 		try {
-			window.localStorage.setItem(preferencesKey, JSON.stringify({ entranceMode, labelMode }));
+			window.localStorage.setItem(
+				preferencesKey,
+				JSON.stringify({ entranceMode, labelMode, labelTextSize })
+			);
 		} catch {
 			// Settings remain available for the current page when storage is unavailable.
 		}
@@ -163,8 +176,9 @@
 	}
 
 	function collisionRadius(node: GraphNode): number {
-		if (labelMode === 'code') return 24;
-		return Math.min(90, Math.max(30, node.name.length * 2.2));
+		const textScale = labelTextSize / 10;
+		if (labelMode === 'code') return 24 * textScale;
+		return Math.min(90, Math.max(30, node.name.length * 2.2)) * textScale;
 	}
 
 	function createCollisionForce() {
@@ -242,6 +256,34 @@
 		labelMode = mode;
 		savePreferences();
 		simulation?.force('collision', createCollisionForce()).alpha(0.4).restart();
+	}
+
+	function applyLabelTextSize(nextSize: number): void {
+		if (nextSize === labelTextSize) return;
+		labelTextSize = nextSize;
+		savePreferences();
+		simulation?.force('collision', createCollisionForce()).alpha(0.35).restart();
+	}
+
+	function previewLabelTextSize(event: Event): void {
+		const value = (event.currentTarget as HTMLInputElement).valueAsNumber;
+		if (
+			!Number.isInteger(value) ||
+			value < minimumLabelTextSize ||
+			value > maximumLabelTextSize
+		) {
+			return;
+		}
+		applyLabelTextSize(value);
+	}
+
+	function commitLabelTextSize(event: Event): void {
+		const input = event.currentTarget as HTMLInputElement;
+		const nextSize = Number.isFinite(input.valueAsNumber)
+			? normalizeLabelTextSize(input.valueAsNumber)
+			: labelTextSize;
+		input.value = String(nextSize);
+		applyLabelTextSize(nextSize);
 	}
 
 	function updateSimulationBounds(): void {
@@ -448,11 +490,14 @@
 		class="graph-surface"
 		data-entrance-mode={entranceMode}
 		data-label-mode={labelMode}
+		data-label-size={labelTextSize}
+		style={`--course-label-size: ${labelTextSize}px`}
 		bind:this={graphRoot}
 	>
 		<svg
 			bind:this={svgElement}
 			viewBox={`0 0 ${width} ${height}`}
+			data-label-size={labelTextSize}
 			role="img"
 			aria-label="Course relationship map"
 			aria-describedby="coursework-svg-description"
@@ -574,6 +619,24 @@
 							</Button>
 						</div>
 					</fieldset>
+
+					<div class="grid grid-cols-[1fr_auto] items-center gap-3">
+						<label for="coursework-label-size" class="text-sm font-medium">Text size</label>
+						<div class="flex items-center gap-2">
+							<input
+								id="coursework-label-size"
+								type="number"
+								min={minimumLabelTextSize}
+								max={maximumLabelTextSize}
+								step="1"
+								value={labelTextSize}
+								oninput={previewLabelTextSize}
+								onchange={commitLabelTextSize}
+								class="h-8 w-20 rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+							/>
+							<span class="text-xs text-muted-foreground" aria-hidden="true">px</span>
+						</div>
+					</div>
 				</div>
 			</Dialog.Content>
 		</Dialog.Root>
@@ -712,7 +775,7 @@
 
 	.course-node text {
 		fill: #222;
-		font-size: 10px;
+		font-size: var(--course-label-size, 10px);
 		font-weight: 400;
 		pointer-events: none;
 		transition: opacity 180ms ease, font-weight 180ms ease;

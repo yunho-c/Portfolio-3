@@ -72,6 +72,19 @@ describe('/coursework/+page.svelte', () => {
 			'aria-pressed',
 			'true'
 		);
+		const textSize = page.getByLabelText('Text size');
+		await textSize.fill('14');
+		await expect.element(page.getByRole('img', { name: 'Course relationship map' })).toHaveAttribute(
+			'data-label-size',
+			'14'
+		);
+		expect(
+			getComputedStyle(document.querySelector('[data-course-node="CS 1000"] text') as SVGTextElement)
+				.fontSize
+		).toBe('14px');
+		expect(JSON.parse(window.localStorage.getItem('coursework-graph-preferences') ?? '{}')).toMatchObject(
+			{ labelTextSize: 14 }
+		);
 		await page.getByRole('button', { name: 'Explosion' }).click();
 		await expect.element(page.getByRole('button', { name: 'Explosion' })).toHaveAttribute(
 			'aria-pressed',
