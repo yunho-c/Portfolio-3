@@ -120,11 +120,12 @@
 					>
 						Experience
 					</a>
-					<div
-						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground sm:text-xl dark:bg-gray-800"
+					<a
+						href={resolve('/coursework')}
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
 					>
 						Coursework
-					</div>
+					</a>
 					<div
 						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground sm:text-xl dark:bg-gray-800"
 					>
