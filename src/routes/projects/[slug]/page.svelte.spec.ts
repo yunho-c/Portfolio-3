@@ -179,7 +179,7 @@ Second body.`
 		await expect.element(page.getByText('Interactive demo', { exact: true })).toBeInTheDocument();
 	});
 
-	it('renders a mixed-media gallery between Markdown segments and supports thumbnail navigation', async () => {
+	it('renders a centered thumbnail gallery with explicit playback and keyboard navigation', async () => {
 		const gallery: ProjectGallery = {
 			id: 'system-demo',
 			title: 'System demo',
@@ -208,21 +208,80 @@ Second body.`
 			}
 		});
 
-		await expect.element(page.getByRole('region', { name: 'System demo' })).toBeInTheDocument();
-		await page.getByRole('button', { name: 'Pause gallery autoplay' }).click();
+		const galleryRegion = page.getByRole('region', { name: 'System demo' });
+		await expect.element(galleryRegion).toBeInTheDocument();
+		(galleryRegion.element() as HTMLElement).focus();
+		await new Promise<void>((resolve) =>
+			requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+		);
 		await expect.element(page.getByRole('heading', { name: 'Before' })).toBeInTheDocument();
 		await expect.element(page.getByRole('heading', { name: 'After' })).toBeInTheDocument();
 		await expect
 			.element(page.getByText('Architecture overview', { exact: true }))
 			.toBeInTheDocument();
-		await expect.element(page.getByText('1 / 2')).toBeInTheDocument();
+		await expect
+			.element(page.getByRole('button', { name: 'Previous slide' }))
+			.not.toBeInTheDocument();
+		await expect.element(page.getByRole('button', { name: 'Next slide' })).not.toBeInTheDocument();
+		await expect
+			.element(page.getByRole('button', { name: 'Pause gallery autoplay' }))
+			.not.toBeInTheDocument();
+		expect(document.querySelector('.project-gallery__thumbnail-badge')).toBeNull();
+		expect(document.querySelector('.project-gallery__count')).toBeNull();
+
+		const stage = document.querySelector<HTMLElement>('.project-gallery__stage');
+		stage!.click();
+		await expect
+			.element(page.getByText('Gallery autoplay paused', { exact: true }))
+			.toBeInTheDocument();
+		expect(
+			document.querySelector('.project-gallery__playback-feedback')?.getAttribute('data-state')
+		).toBe('paused');
+		await new Promise((resolve) => window.setTimeout(resolve, 600));
+		expect(
+			document.querySelector('.project-gallery__playback-feedback')?.getAttribute('data-state')
+		).toBe('paused');
+
+		const resumeEvent = new KeyboardEvent('keydown', {
+			key: ' ',
+			bubbles: true,
+			cancelable: true
+		});
+		expect(galleryRegion.element().dispatchEvent(resumeEvent)).toBe(false);
+		await expect
+			.element(page.getByText('Gallery autoplay resumed', { exact: true }))
+			.toBeInTheDocument();
+		expect(
+			document.querySelector('.project-gallery__playback-feedback')?.getAttribute('data-state')
+		).toBe('playing');
+		await new Promise((resolve) => window.setTimeout(resolve, 600));
+		expect(document.querySelector('.project-gallery__playback-feedback')).toBeNull();
 
 		const secondThumbnail = page.getByRole('button', { name: 'Show slide 2: Interactive demo' });
-		await secondThumbnail.click();
+		const arrowEvent = new KeyboardEvent('keydown', {
+			key: 'ArrowRight',
+			bubbles: true,
+			cancelable: true
+		});
+		expect(galleryRegion.element().dispatchEvent(arrowEvent)).toBe(false);
 
 		await expect.element(secondThumbnail).toHaveAttribute('aria-current', 'true');
-		await expect.element(page.getByText('2 / 2')).toBeInTheDocument();
 		await expect.element(page.getByText('Interactive demo', { exact: true })).toBeInTheDocument();
+
+		const firstThumbnail = page.getByRole('button', {
+			name: 'Show slide 1: Architecture overview'
+		});
+		await firstThumbnail.click();
+		await expect.element(firstThumbnail).toHaveAttribute('aria-current', 'true');
+
+		const thumbnailBar = document.querySelector<HTMLElement>('.project-gallery__thumbnails');
+		const thumbnails = [...document.querySelectorAll<HTMLElement>('.project-gallery__thumbnail')];
+		const barBounds = thumbnailBar!.getBoundingClientRect();
+		const firstBounds = thumbnails[0].getBoundingClientRect();
+		const lastBounds = thumbnails.at(-1)!.getBoundingClientRect();
+		expect(
+			Math.abs((firstBounds.left + lastBounds.right) / 2 - (barBounds.left + barBounds.right) / 2)
+		).toBeLessThan(1);
 	});
 
 	it('renders a single gallery item without carousel navigation or autoplay controls', async () => {

@@ -2,13 +2,9 @@
 	/* eslint-disable svelte/no-navigation-without-resolve -- gallery fallbacks are validated absolute HTTPS URLs */
 	import { onMount, tick } from 'svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-	import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import GlobeIcon from '@lucide/svelte/icons/globe-2';
-	import ImageIcon from '@lucide/svelte/icons/image';
 	import PauseIcon from '@lucide/svelte/icons/pause';
 	import PlayIcon from '@lucide/svelte/icons/play';
-	import { Button } from '$lib/components/ui/button';
 	import * as Carousel from '$lib/components/ui/carousel';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context';
 	import {
@@ -30,14 +26,16 @@
 	let intersectionRatio = 0;
 	let centerDistance = Number.POSITIVE_INFINITY;
 	let documentVisible = true;
-	let hovering = false;
-	let focusWithin = false;
 	let explicitPaused = false;
 	let reducedMotion = false;
 	let coordinatorActive = false;
 	let userVideoBlocked = false;
+	let playbackFeedback: 'paused' | 'playing' | undefined;
+	let playbackFeedbackId = 0;
+	let playbackAnnouncement = '';
 	let registration: GalleryAutoplayRegistration | undefined;
 	let timerId: number | undefined;
+	let feedbackTimerId: number | undefined;
 	let timerStartedAt = 0;
 	let remainingMs = IMAGE_DURATION_MS;
 	let videoPlayPending = false;
@@ -49,7 +47,6 @@
 
 	$: activeItem = gallery.items[selectedIndex] ?? gallery.items[0];
 	$: stageRatio = slideRatios[selectedIndex] ?? DEFAULT_ASPECT_RATIO;
-	$: autoplayRequested = !explicitPaused && !userVideoBlocked;
 
 	function getSlideDuration(index = selectedIndex): number {
 		return gallery.items[index]?.kind === 'iframe' ? IFRAME_DURATION_MS : IMAGE_DURATION_MS;
@@ -61,10 +58,50 @@
 			!explicitPaused &&
 			!userVideoBlocked &&
 			intersectionRatio >= MIN_INTERSECTION_RATIO &&
-			documentVisible &&
-			!hovering &&
-			!focusWithin
+			documentVisible
 		);
+	}
+
+	function showPlaybackFeedback(state: 'paused' | 'playing'): void {
+		if (feedbackTimerId !== undefined) {
+			window.clearTimeout(feedbackTimerId);
+			feedbackTimerId = undefined;
+		}
+
+		playbackFeedback = state;
+		playbackFeedbackId += 1;
+		playbackAnnouncement =
+			state === 'paused' ? 'Gallery autoplay paused' : 'Gallery autoplay resumed';
+		if (state === 'paused') return;
+
+		feedbackTimerId = window.setTimeout(
+			() => {
+				playbackFeedback = undefined;
+				feedbackTimerId = undefined;
+			},
+			reducedMotion ? 250 : 520
+		);
+	}
+
+	function clearUserVideoPause(): void {
+		const wasUserPaused = userVideoBlocked;
+		userVideoBlocked = false;
+		if (wasUserPaused && !explicitPaused && playbackFeedback === 'paused') {
+			playbackFeedback = undefined;
+			playbackAnnouncement = 'Gallery autoplay resumed';
+		}
+	}
+
+	function toggleGalleryPlayback(): void {
+		if (gallery.items.length <= 1) return;
+
+		const shouldPause = !(explicitPaused || userVideoBlocked);
+		explicitPaused = shouldPause;
+		userVideoBlocked = false;
+		showPlaybackFeedback(shouldPause ? 'paused' : 'playing');
+		refreshEligibility();
+		if (shouldPause) registration?.release();
+		else registration?.claim();
 	}
 
 	function updateCenterDistance(): void {
@@ -177,7 +214,7 @@
 		resetOutgoingVideo(previousIndex);
 		selectedIndex = nextIndex;
 		remainingMs = getSlideDuration(nextIndex);
-		userVideoBlocked = false;
+		clearUserVideoPause();
 		void tick().then(() => {
 			thumbnailElements.get(nextIndex)?.scrollIntoView({
 				behavior: reducedMotion ? 'auto' : 'smooth',
@@ -196,7 +233,7 @@
 		}
 
 		clearTimer(false);
-		userVideoBlocked = false;
+		clearUserVideoPause();
 		remainingMs = getSlideDuration(index);
 		api?.scrollTo(index);
 	}
@@ -210,18 +247,51 @@
 		navigateTo((selectedIndex - 1 + gallery.items.length) % gallery.items.length);
 	}
 
-	function toggleAutoplay(): void {
-		if (!explicitPaused && !userVideoBlocked) {
-			explicitPaused = true;
-			registration?.release();
-		} else {
-			explicitPaused = false;
-			userVideoBlocked = false;
-			remainingMs = getSlideDuration();
-		}
+	function handleGalleryKeyDown(event: KeyboardEvent): void {
+		if (
+			gallery.items.length <= 1 ||
+			event.defaultPrevented ||
+			event.altKey ||
+			event.ctrlKey ||
+			event.metaKey ||
+			event.shiftKey
+		)
+			return;
 
-		refreshEligibility();
-		if (!explicitPaused) registration?.claim();
+		const target = event.target;
+		if (
+			target instanceof HTMLVideoElement ||
+			target instanceof HTMLIFrameElement ||
+			target instanceof HTMLInputElement ||
+			target instanceof HTMLTextAreaElement ||
+			target instanceof HTMLSelectElement ||
+			(target instanceof HTMLElement && target.isContentEditable)
+		)
+			return;
+
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			previous();
+		} else if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			advance();
+		} else if (event.key === ' ') {
+			event.preventDefault();
+			toggleGalleryPlayback();
+		}
+	}
+
+	function handleGalleryClick(event: MouseEvent): void {
+		if (event.defaultPrevented || !(event.target instanceof Element)) return;
+		if (!event.target.closest('.project-gallery__stage')) return;
+		if (event.target.closest('button, a, video, iframe')) return;
+		toggleGalleryPlayback();
+	}
+
+	function focusGalleryFromPointer(event: PointerEvent): void {
+		if (!(event.target instanceof Element)) return;
+		if (event.target.closest('button, a, video, iframe')) return;
+		root.focus({ preventScroll: true });
 	}
 
 	function registerVideo(node: HTMLVideoElement, index: number) {
@@ -275,12 +345,15 @@
 		)
 			return;
 		userVideoBlocked = true;
+		showPlaybackFeedback('paused');
 		refreshEligibility();
 	}
 
 	function handleVideoPlay(index: number): void {
-		if (index !== selectedIndex || !userVideoBlocked || explicitPaused) return;
+		if (index !== selectedIndex || (!userVideoBlocked && !explicitPaused)) return;
+		explicitPaused = false;
 		userVideoBlocked = false;
+		showPlaybackFeedback('playing');
 		refreshEligibility();
 	}
 
@@ -332,6 +405,7 @@
 
 		return () => {
 			clearTimer(false);
+			if (feedbackTimerId !== undefined) window.clearTimeout(feedbackTimerId);
 			pauseActiveVideo();
 			api?.off('select', handleSelection);
 			observer.disconnect();
@@ -344,28 +418,19 @@
 	});
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex a11y_no_noninteractive_element_interactions (the labelled gallery region is intentionally keyboard-focusable) -->
 <section
 	bind:this={root}
 	class="project-gallery not-prose"
 	aria-label={gallery.title || 'Project media gallery'}
-	onmouseenter={() => {
-		hovering = true;
-		refreshEligibility();
-	}}
-	onmouseleave={() => {
-		hovering = false;
-		refreshEligibility();
-	}}
-	onfocusin={() => {
-		focusWithin = true;
-		refreshEligibility();
-	}}
-	onfocusout={(event) => {
-		if (event.relatedTarget instanceof Node && root.contains(event.relatedTarget)) return;
-		focusWithin = false;
-		refreshEligibility();
-	}}
+	aria-keyshortcuts={gallery.items.length > 1 ? 'ArrowLeft ArrowRight Space' : undefined}
+	tabindex={gallery.items.length > 1 ? 0 : undefined}
+	onkeydown={handleGalleryKeyDown}
+	onpointerdown={focusGalleryFromPointer}
+	onclick={handleGalleryClick}
 >
+	<span class="sr-only" aria-live="polite">{playbackAnnouncement}</span>
+
 	{#if gallery.title}
 		<h2 class="project-gallery__title">{gallery.title}</h2>
 	{/if}
@@ -461,6 +526,22 @@
 				</Carousel.Content>
 			</Carousel.Root>
 		{/if}
+
+		{#if playbackFeedback}
+			{#key playbackFeedbackId}
+				<span
+					class="project-gallery__playback-feedback"
+					data-state={playbackFeedback}
+					aria-hidden="true"
+				>
+					{#if playbackFeedback === 'paused'}
+						<PauseIcon />
+					{:else}
+						<PlayIcon />
+					{/if}
+				</span>
+			{/key}
+		{/if}
 	</div>
 
 	{#if activeItem.caption}
@@ -468,53 +549,31 @@
 	{/if}
 
 	{#if gallery.items.length > 1}
-		<div class="project-gallery__controls">
-			<div class="project-gallery__buttons">
-				<Button variant="outline" size="icon" class="project-gallery__button" onclick={previous} aria-label="Previous slide">
-					<ChevronLeftIcon />
-				</Button>
-				<Button
-					variant="outline"
-					size="icon"
-					class="project-gallery__button"
-					onclick={toggleAutoplay}
-					aria-label={autoplayRequested ? 'Pause gallery autoplay' : 'Play gallery autoplay'}
-					aria-pressed={!autoplayRequested}
-				>
-					{#if autoplayRequested}<PauseIcon />{:else}<PlayIcon />{/if}
-				</Button>
-				<Button variant="outline" size="icon" class="project-gallery__button" onclick={advance} aria-label="Next slide">
-					<ChevronRightIcon />
-				</Button>
-			</div>
-			<span class="project-gallery__count" aria-live="polite">{selectedIndex + 1} / {gallery.items.length}</span>
-		</div>
-
 		<div class="project-gallery__thumbnails" aria-label="Choose a gallery slide">
-			{#each gallery.items as item, index (index)}
-				<button
-					use:registerThumbnail={index}
-					type="button"
-					class="project-gallery__thumbnail"
-					class:project-gallery__thumbnail--active={index === selectedIndex}
-					aria-label={`Show slide ${index + 1}: ${item.label}`}
-					aria-current={index === selectedIndex ? 'true' : undefined}
-					onclick={() => navigateTo(index)}
-				>
-					{#if item.kind === 'image'}
-						<img src={item.src} alt="" loading="lazy" aria-hidden="true" />
-						<span class="project-gallery__thumbnail-badge"><ImageIcon /></span>
-					{:else if item.kind === 'video'}
-						<video src={item.src} muted playsinline preload="metadata" aria-hidden="true"></video>
-						<span class="project-gallery__thumbnail-badge"><PlayIcon /></span>
-					{:else}
-						<span class="project-gallery__embed-thumbnail">
-							<GlobeIcon />
-							<span>{item.host}</span>
-						</span>
-					{/if}
-				</button>
-			{/each}
+			<div class="project-gallery__thumbnail-list">
+				{#each gallery.items as item, index (index)}
+					<button
+						use:registerThumbnail={index}
+						type="button"
+						class="project-gallery__thumbnail"
+						class:project-gallery__thumbnail--active={index === selectedIndex}
+						aria-label={`Show slide ${index + 1}: ${item.label}`}
+						aria-current={index === selectedIndex ? 'true' : undefined}
+						onclick={() => navigateTo(index)}
+					>
+						{#if item.kind === 'image'}
+							<img src={item.src} alt="" loading="lazy" aria-hidden="true" />
+						{:else if item.kind === 'video'}
+							<video src={item.src} muted playsinline preload="metadata" aria-hidden="true"></video>
+						{:else}
+							<span class="project-gallery__embed-thumbnail">
+								<GlobeIcon />
+								<span>{item.host}</span>
+							</span>
+						{/if}
+					</button>
+				{/each}
+			</div>
 		</div>
 	{/if}
 </section>
@@ -524,6 +583,18 @@
 		width: min(62rem, calc(100vw - 2rem));
 		margin: 3rem 50%;
 		transform: translateX(-50%);
+	}
+
+	.project-gallery:focus-visible {
+		outline: none;
+	}
+
+	.project-gallery:focus-visible .project-gallery__stage {
+		border-color: var(--ring);
+		box-shadow:
+			0 0 0 3px color-mix(in oklab, var(--ring) 24%, transparent),
+			0 16px 42px rgb(0 0 0 / 0.09),
+			0 2px 8px rgb(0 0 0 / 0.05);
 	}
 
 	.project-gallery__title {
@@ -547,6 +618,74 @@
 			0 16px 42px rgb(0 0 0 / 0.09),
 			0 2px 8px rgb(0 0 0 / 0.05);
 		transition: aspect-ratio 240ms ease;
+	}
+
+	.project-gallery__playback-feedback {
+		position: absolute;
+		z-index: 4;
+		inset: 50% auto auto 50%;
+		display: grid;
+		width: 4.25rem;
+		height: 4.25rem;
+		place-items: center;
+		border: 1px solid rgb(255 255 255 / 0.2);
+		border-radius: 9999px;
+		background: rgb(12 12 14 / 0.48);
+		box-shadow: 0 8px 28px rgb(0 0 0 / 0.18);
+		color: white;
+		pointer-events: none;
+		transform: translate(-50%, -50%);
+		-webkit-backdrop-filter: blur(7px);
+		backdrop-filter: blur(7px);
+	}
+
+	.project-gallery__playback-feedback[data-state='paused'] {
+		animation: gallery-playback-pause-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.project-gallery__playback-feedback[data-state='playing'] {
+		animation: gallery-playback-resume 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.project-gallery__playback-feedback :global(svg) {
+		width: 1.55rem;
+		height: 1.55rem;
+		fill: currentColor;
+		stroke-width: 2.35;
+	}
+
+	@keyframes gallery-playback-pause-in {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -50%) scale(1.14);
+		}
+
+		100% {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+	}
+
+	@keyframes gallery-playback-resume {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, -50%) scale(1.14);
+		}
+
+		18% {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+
+		68% {
+			opacity: 0.92;
+			transform: translate(-50%, -50%) scale(0.9);
+		}
+
+		100% {
+			opacity: 0;
+			transform: translate(-50%, -50%) scale(0.76);
+		}
 	}
 
 	:global(.project-gallery__carousel),
@@ -607,40 +746,21 @@
 		text-align: center;
 	}
 
-	.project-gallery__controls {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		margin-top: 0.85rem;
-	}
-
-	.project-gallery__buttons {
-		display: flex;
-		gap: 0.45rem;
-	}
-
-	:global(.project-gallery__button) {
-		width: 2.25rem;
-		height: 2.25rem;
-		border-radius: 0.625rem;
-	}
-
-	.project-gallery__count {
-		color: var(--muted-foreground);
-		font-variant-numeric: tabular-nums;
-		font-size: 0.75rem;
-		font-weight: 550;
-	}
-
 	.project-gallery__thumbnails {
-		display: flex;
-		gap: 0.55rem;
 		margin-top: 0.7rem;
-		padding: 0.2rem 0.15rem 0.45rem;
 		overflow-x: auto;
 		scrollbar-width: thin;
 		scroll-snap-type: x proximity;
+	}
+
+	.project-gallery__thumbnail-list {
+		display: flex;
+		box-sizing: border-box;
+		width: max-content;
+		min-width: 100%;
+		justify-content: center;
+		gap: 0.55rem;
+		padding: 0.2rem 0.25rem 0.45rem;
 	}
 
 	.project-gallery__thumbnail {
@@ -686,24 +806,6 @@
 		object-fit: cover;
 	}
 
-	.project-gallery__thumbnail-badge {
-		position: absolute;
-		right: 0.28rem;
-		bottom: 0.28rem;
-		display: grid;
-		width: 1.15rem;
-		height: 1.15rem;
-		place-items: center;
-		border-radius: 999px;
-		background: rgb(0 0 0 / 0.64);
-		color: white;
-	}
-
-	.project-gallery__thumbnail-badge :global(svg) {
-		width: 0.68rem;
-		height: 0.68rem;
-	}
-
 	.project-gallery__embed-thumbnail {
 		display: flex;
 		width: 100%;
@@ -744,6 +846,10 @@
 		.project-gallery__stage,
 		.project-gallery__thumbnail {
 			transition: none;
+		}
+
+		.project-gallery__playback-feedback[data-state] {
+			animation: none;
 		}
 	}
 </style>
