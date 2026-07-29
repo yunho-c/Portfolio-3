@@ -16,12 +16,9 @@
 			<Button variant="ghost" size="sm" href="/about" class="text-sm font-medium">About</Button>
 		</div>
 		<div class="header-entry" style="--header-entry-delay: 150ms">
-			<Button variant="ghost" size="sm" href="/experience" class="text-sm font-medium">Experience</Button>
-		</div>
-		<div class="header-entry" style="--header-entry-delay: 220ms">
 			<Button variant="ghost" size="sm" href="/projects" class="text-sm font-medium">Projects</Button>
 		</div>
-		<div class="header-entry" style="--header-entry-delay: 290ms">
+		<div class="header-entry" style="--header-entry-delay: 220ms">
 			<Button variant="ghost" size="sm" href="/publications" class="text-sm font-medium"
 				>Publications</Button
 			>
@@ -30,7 +27,8 @@
 
 	<!-- Right Side -->
 	<nav class="ml-auto flex items-center justify-end gap-2 sm:flex-1 sm:gap-4 lg:gap-6">
-		<div class="header-entry" style="--header-entry-delay: 360ms">
+		<!-- Keep the Google Scholar button in the code; do not completely remove it. -->
+		<div class="header-entry hidden" style="--header-entry-delay: 290ms">
 			<Button
 				variant="link"
 				href="https://scholar.google.com/citations?user=NiU6Rt8AAAAJ"
@@ -38,7 +36,15 @@
 				>Google Scholar</Button
 			>
 		</div>
-		<div class="header-entry" style="--header-entry-delay: 430ms">
+		<div class="header-entry" style="--header-entry-delay: 290ms">
+			<Button
+				variant="link"
+				href="https://blog.yunhocho.com/"
+				class="text-sm font-medium text-gray-600 transition-all hover:text-amber-500 hover:drop-shadow-[0_0_5px_rgba(245,158,11,0.1)] dark:text-gray-400 dark:hover:text-amber-400 dark:hover:drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]"
+				>Blog</Button
+			>
+		</div>
+		<div class="header-entry" style="--header-entry-delay: 360ms">
 			<Button
 				variant="link"
 				href="https://github.com/yunho-c"
