@@ -51,12 +51,35 @@ describe('/publications/+page.svelte', () => {
 		const zoomOutButton = page.getByRole('button', { name: 'Zoom out' });
 		const zoomInButton = page.getByRole('button', { name: 'Zoom in' });
 		const resetZoomButton = page.getByRole('button', { name: 'Reset poster zoom to fit' });
+		const posterViewportLocator = page.getByTestId('poster-viewport');
+		const posterViewport = posterViewportLocator.element() as HTMLDivElement;
+		const posterCanvas = page.getByTestId('poster-canvas').element() as HTMLDivElement;
+		const viewportCenter = () => ({
+			x:
+				(posterViewport.scrollLeft + posterViewport.clientWidth / 2) /
+				Math.max(posterViewport.scrollWidth, 1),
+			y:
+				(posterViewport.scrollTop + posterViewport.clientHeight / 2) /
+				Math.max(posterViewport.scrollHeight, 1)
+		});
 
 		await expect.element(zoomOutButton).toBeDisabled();
 		await expect.element(resetZoomButton).toHaveTextContent('100%');
+		const centerBeforeZoom = viewportCenter();
 		await zoomInButton.click();
+		await expect.element(posterViewportLocator).toHaveAttribute('data-zooming', 'true');
+		await new Promise<void>((resolve) =>
+			requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+		);
+		const intermediateScale = Number.parseFloat(posterCanvas.style.zoom);
+		expect(intermediateScale).toBeGreaterThan(1);
+		expect(intermediateScale).toBeLessThan(1.25);
 		await expect.element(resetZoomButton).toHaveTextContent('125%');
+		await expect.element(posterViewportLocator).toHaveAttribute('data-zooming', 'false');
 		await expect.element(zoomOutButton).toBeEnabled();
+		const centerAfterZoom = viewportCenter();
+		expect(Math.abs(centerAfterZoom.x - centerBeforeZoom.x)).toBeLessThan(0.02);
+		expect(Math.abs(centerAfterZoom.y - centerBeforeZoom.y)).toBeLessThan(0.02);
 		await resetZoomButton.click();
 		await expect.element(resetZoomButton).toHaveTextContent('100%');
 		await expect.element(zoomOutButton).toBeDisabled();

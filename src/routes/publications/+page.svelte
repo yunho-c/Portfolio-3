@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy, tick } from 'svelte';
 	import MinusIcon from '@lucide/svelte/icons/minus';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -7,11 +8,113 @@
 	const POSTER_ZOOM_MIN = 100;
 	const POSTER_ZOOM_MAX = 300;
 	const POSTER_ZOOM_STEP = 25;
+	const POSTER_ZOOM_DURATION = 200;
 
 	let posterZoom = $state(POSTER_ZOOM_MIN);
+	let posterTargetZoom = $state(POSTER_ZOOM_MIN);
+	let posterZoomAnimating = $state(false);
+	let posterViewport: HTMLDivElement | null = null;
+	let posterAnimationFrame: number | null = null;
+	let posterAnimationVersion = 0;
+
+	function cancelPosterZoomAnimation() {
+		posterAnimationVersion += 1;
+		posterZoomAnimating = false;
+
+		if (posterAnimationFrame !== null) {
+			cancelAnimationFrame(posterAnimationFrame);
+			posterAnimationFrame = null;
+		}
+	}
+
+	function getPosterViewportCenter(viewport: HTMLDivElement) {
+		return {
+			x: (viewport.scrollLeft + viewport.clientWidth / 2) / Math.max(viewport.scrollWidth, 1),
+			y: (viewport.scrollTop + viewport.clientHeight / 2) / Math.max(viewport.scrollHeight, 1)
+		};
+	}
+
+	function restorePosterViewportCenter(
+		viewport: HTMLDivElement,
+		center: { x: number; y: number }
+	) {
+		viewport.scrollLeft = center.x * viewport.scrollWidth - viewport.clientWidth / 2;
+		viewport.scrollTop = center.y * viewport.scrollHeight - viewport.clientHeight / 2;
+	}
 
 	function updatePosterZoom(nextZoom: number) {
-		posterZoom = Math.min(POSTER_ZOOM_MAX, Math.max(POSTER_ZOOM_MIN, nextZoom));
+		const targetZoom = Math.min(POSTER_ZOOM_MAX, Math.max(POSTER_ZOOM_MIN, nextZoom));
+		if (targetZoom === posterTargetZoom && posterZoom === targetZoom) return;
+
+		const viewport = posterViewport;
+		const center = viewport ? getPosterViewportCenter(viewport) : null;
+		const startZoom = posterZoom;
+
+		cancelPosterZoomAnimation();
+		const updateVersion = posterAnimationVersion;
+		posterTargetZoom = targetZoom;
+
+		if (!viewport || !center) {
+			posterZoom = targetZoom;
+			return;
+		}
+
+		const activeViewport = viewport;
+		const focalCenter = center;
+
+		if (
+			targetZoom === startZoom ||
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		) {
+			posterZoom = targetZoom;
+			void tick().then(() => {
+				if (updateVersion === posterAnimationVersion && activeViewport.isConnected) {
+					restorePosterViewportCenter(activeViewport, focalCenter);
+				}
+			});
+
+			return;
+		}
+
+		posterZoomAnimating = true;
+		const startTime = performance.now();
+
+		function animateZoom(currentTime: number) {
+			if (updateVersion !== posterAnimationVersion) return;
+
+			const progress = Math.min((currentTime - startTime) / POSTER_ZOOM_DURATION, 1);
+			const easedProgress = 1 - Math.pow(1 - progress, 3);
+			posterZoom = startZoom + (targetZoom - startZoom) * easedProgress;
+
+			void tick().then(() => {
+				if (updateVersion !== posterAnimationVersion) return;
+
+				if (!activeViewport.isConnected) {
+					posterZoom = targetZoom;
+					posterZoomAnimating = false;
+					posterAnimationFrame = null;
+					return;
+				}
+
+				restorePosterViewportCenter(activeViewport, focalCenter);
+
+				if (progress < 1) {
+					posterAnimationFrame = requestAnimationFrame(animateZoom);
+				} else {
+					posterZoom = targetZoom;
+					posterZoomAnimating = false;
+					posterAnimationFrame = null;
+				}
+			});
+		}
+
+		posterAnimationFrame = requestAnimationFrame(animateZoom);
+	}
+
+	function resetPosterZoomForOpen() {
+		cancelPosterZoomAnimation();
+		posterZoom = POSTER_ZOOM_MIN;
+		posterTargetZoom = POSTER_ZOOM_MIN;
 	}
 
 	function handlePosterKeydown(event: KeyboardEvent) {
@@ -19,15 +122,17 @@
 
 		if (event.key === '+' || event.key === '=') {
 			event.preventDefault();
-			updatePosterZoom(posterZoom + POSTER_ZOOM_STEP);
+			updatePosterZoom(posterTargetZoom + POSTER_ZOOM_STEP);
 		} else if (event.key === '-') {
 			event.preventDefault();
-			updatePosterZoom(posterZoom - POSTER_ZOOM_STEP);
+			updatePosterZoom(posterTargetZoom - POSTER_ZOOM_STEP);
 		} else if (event.key === '0') {
 			event.preventDefault();
 			updatePosterZoom(POSTER_ZOOM_MIN);
 		}
 	}
+
+	onDestroy(cancelPosterZoomAnimation);
 </script>
 
 <svelte:head>
@@ -119,7 +224,7 @@
 				<div class="mt-6 flex flex-wrap gap-3">
 					<Dialog.Root>
 						<Dialog.Trigger
-							onclick={() => updatePosterZoom(POSTER_ZOOM_MIN)}
+							onclick={resetPosterZoomForOpen}
 							class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
 							View poster
@@ -147,8 +252,8 @@
 										variant="outline"
 										size="icon"
 										class="size-8"
-										disabled={posterZoom === POSTER_ZOOM_MIN}
-										onclick={() => updatePosterZoom(posterZoom - POSTER_ZOOM_STEP)}
+										disabled={posterTargetZoom === POSTER_ZOOM_MIN}
+										onclick={() => updatePosterZoom(posterTargetZoom - POSTER_ZOOM_STEP)}
 										aria-label="Zoom out"
 										title="Zoom out (−)"
 									>
@@ -157,19 +262,19 @@
 									<Button
 										variant="ghost"
 										size="sm"
-										class="min-w-16 px-2 font-mono text-xs tabular-nums"
+										class="min-w-16 px-2 text-xs tabular-nums"
 										onclick={() => updatePosterZoom(POSTER_ZOOM_MIN)}
 										aria-label="Reset poster zoom to fit"
 										title="Reset to fit (0)"
 									>
-										{posterZoom}%
+										{Math.round(posterZoom)}%
 									</Button>
 									<Button
 										variant="outline"
 										size="icon"
 										class="size-8"
-										disabled={posterZoom === POSTER_ZOOM_MAX}
-										onclick={() => updatePosterZoom(posterZoom + POSTER_ZOOM_STEP)}
+										disabled={posterTargetZoom === POSTER_ZOOM_MAX}
+										onclick={() => updatePosterZoom(posterTargetZoom + POSTER_ZOOM_STEP)}
 										aria-label="Zoom in"
 										title="Zoom in (+)"
 									>
@@ -178,7 +283,12 @@
 								</div>
 							</div>
 
-							<div class="min-h-0 overflow-auto overscroll-contain bg-muted/30 p-3">
+							<div
+								bind:this={posterViewport}
+								class="min-h-0 overflow-auto overscroll-contain bg-muted/30 p-3"
+								data-testid="poster-viewport"
+								data-zooming={posterZoomAnimating}
+							>
 								<div
 									class="mx-auto w-fit origin-top"
 									style:zoom={posterZoom / 100}
