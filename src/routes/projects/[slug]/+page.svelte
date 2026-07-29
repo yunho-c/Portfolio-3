@@ -31,6 +31,7 @@
 	let tooltipTop = 0;
 	let tooltipArrowLeft = 0;
 	let tooltipPlacement: 'top' | 'bottom' = 'top';
+	let tocPlacement: 'left' | 'right' = 'left';
 	let activeHeadingSlugs: string[] = [];
 	let visibilityFrame: number | null = null;
 
@@ -302,8 +303,16 @@
 		{/if}
 
 		{#if headings.length > 0}
-			<aside class="project-toc-column" use:registerTocNavigation>
-				<ProjectTableOfContents {headings} activeSlugs={activeHeadingSlugs} />
+			<aside
+				class="project-toc-column"
+				data-placement={tocPlacement}
+				use:registerTocNavigation
+			>
+				<ProjectTableOfContents
+					{headings}
+					activeSlugs={activeHeadingSlugs}
+					bind:placement={tocPlacement}
+				/>
 			</aside>
 		{/if}
 
@@ -646,6 +655,13 @@
 			justify-self: end;
 			width: min(17rem, calc(100% - 3rem));
 			margin-right: 3rem;
+		}
+
+		.project-article--with-toc > .project-toc-column[data-placement='right'] {
+			grid-column: 3;
+			justify-self: start;
+			margin-right: 0;
+			margin-left: 3rem;
 		}
 
 		.project-article--with-toc > .project-prose {

@@ -89,6 +89,7 @@ Hidden project context.
 	});
 
 	it('builds a nested-depth TOC and marks visible sections as current', async () => {
+		window.localStorage.removeItem('project-post-preferences');
 		render(Page, {
 			data: {
 				project,
@@ -119,6 +120,32 @@ Second body.`
 		expect(detailLink.element().closest('li')?.getAttribute('aria-level')).toBe('2');
 		expect(document.querySelector('h2#first-section')?.textContent).toBe('First section');
 		await expect.element(firstLink).toHaveAttribute('aria-current', 'true');
+	});
+
+	it('moves the desktop TOC between side rails and remembers the preference', async () => {
+		window.localStorage.removeItem('project-post-preferences');
+		render(Page, {
+			data: {
+				project,
+				galleries: [],
+				content: '## First section\n\nFirst body.'
+			}
+		});
+
+		const tocColumn = document.querySelector<HTMLElement>('.project-toc-column');
+		expect(tocColumn?.dataset.placement).toBe('left');
+
+		await page.getByRole('button', { name: 'Project display settings' }).click();
+		await expect.element(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+		await page.getByRole('button', { name: 'Right' }).click();
+
+		expect(tocColumn?.dataset.placement).toBe('right');
+		await expect
+			.element(page.getByRole('button', { name: 'Right' }))
+			.toHaveAttribute('aria-pressed', 'true');
+		expect(JSON.parse(window.localStorage.getItem('project-post-preferences') ?? '{}')).toEqual({
+			tocPlacement: 'right'
+		});
 	});
 
 	it('renders responsive image, video, and iframe figures from Notion blocks', async () => {
