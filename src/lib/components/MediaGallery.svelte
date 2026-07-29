@@ -580,9 +580,8 @@
 
 <style>
 	.project-gallery {
-		width: min(62rem, calc(100vw - 2rem));
-		margin: 3rem 50%;
-		transform: translateX(-50%);
+		width: var(--project-content-media-width, 100%);
+		margin: 3rem 0;
 	}
 
 	.project-gallery:focus-visible {
@@ -832,10 +831,6 @@
 	}
 
 	@media (max-width: 40rem) {
-		.project-gallery {
-			width: calc(100vw - 1.25rem);
-		}
-
 		.project-gallery__stage {
 			min-height: 10rem;
 			border-radius: 0.7rem;

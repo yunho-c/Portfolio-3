@@ -343,6 +343,8 @@
 	}
 
 	.project-article {
+		--project-content-media-width: 100%;
+
 		width: 100%;
 		max-width: 48rem;
 		grid-template-columns: minmax(0, 1fr);
@@ -502,9 +504,7 @@
 	}
 
 	:global(.project-embed--iframe) {
-		width: min(72rem, calc(100vw - 2rem));
-		margin-left: 50%;
-		transform: translateX(-50%);
+		width: var(--project-content-media-width);
 	}
 
 	:global(.project-embed__video),

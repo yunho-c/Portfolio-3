@@ -179,7 +179,14 @@ Second body.`
 		await expect.element(page.getByText('Interactive demo', { exact: true })).toBeInTheDocument();
 	});
 
-	it('renders a centered thumbnail gallery with explicit playback and keyboard navigation', async () => {
+	it('renders a content-width thumbnail gallery with explicit playback and keyboard navigation', async () => {
+		const wideEmbed = renderNotionMediaBlock({
+			type: 'embed',
+			embed: {
+				url: 'https://example.com/wide-demo/',
+				caption: [{ plain_text: 'Wide interactive demo' }]
+			}
+		});
 		const gallery: ProjectGallery = {
 			id: 'system-demo',
 			title: 'System demo',
@@ -204,7 +211,7 @@ Second body.`
 			data: {
 				project,
 				galleries: [gallery],
-				content: `## Before\n\nIntro.\n\n${createProjectGallerySentinel(gallery.id)}\n\n## After\n\nOutro.`
+				content: `${wideEmbed}\n\n## Before\n\nIntro.\n\n${createProjectGallerySentinel(gallery.id)}\n\n## After\n\nOutro.`
 			}
 		});
 
@@ -228,6 +235,17 @@ Second body.`
 			.not.toBeInTheDocument();
 		expect(document.querySelector('.project-gallery__thumbnail-badge')).toBeNull();
 		expect(document.querySelector('.project-gallery__count')).toBeNull();
+
+		const galleryElement = document.querySelector<HTMLElement>('.project-gallery');
+		const wideEmbedElement = document.querySelector<HTMLElement>('.project-embed--iframe');
+		const proseElement = document.querySelector<HTMLElement>('.project-prose');
+		const galleryBounds = galleryElement!.getBoundingClientRect();
+		const wideEmbedBounds = wideEmbedElement!.getBoundingClientRect();
+		const proseBounds = proseElement!.getBoundingClientRect();
+		expect(Math.abs(galleryBounds.width - wideEmbedBounds.width)).toBeLessThan(1);
+		expect(Math.abs(galleryBounds.width - proseBounds.width)).toBeLessThan(1);
+		expect(Math.abs(galleryBounds.left - wideEmbedBounds.left)).toBeLessThan(1);
+		expect(Math.abs(galleryBounds.left - proseBounds.left)).toBeLessThan(1);
 
 		const stage = document.querySelector<HTMLElement>('.project-gallery__stage');
 		stage!.click();
