@@ -16,6 +16,21 @@ const project = {
 };
 
 describe('/projects/[slug]/+page.svelte', () => {
+	it('renders inline code without decorative backticks', async () => {
+		render(Page, {
+			data: {
+				project,
+				content: 'Run `bun run check` before committing.',
+				galleries: []
+			}
+		});
+
+		const inlineCode = document.querySelector<HTMLElement>('.project-prose code');
+		expect(inlineCode?.textContent).toBe('bun run check');
+		expect(getComputedStyle(inlineCode!, '::before').content).toBe('none');
+		expect(getComputedStyle(inlineCode!, '::after').content).toBe('none');
+	});
+
 	it('shows hover-note content when its inline trigger is hovered', async () => {
 		render(Page, {
 			data: {

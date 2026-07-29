@@ -398,6 +398,11 @@
 		text-wrap: balance;
 	}
 
+	:global(.project-prose code::before),
+	:global(.project-prose code::after) {
+		content: none;
+	}
+
 	:global(.project-hover-note) {
 		appearance: none;
 		margin: 0;
