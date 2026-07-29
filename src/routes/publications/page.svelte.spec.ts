@@ -47,6 +47,20 @@ describe('/publications/+page.svelte', () => {
 				})
 			)
 			.toBeVisible();
+
+		const zoomOutButton = page.getByRole('button', { name: 'Zoom out' });
+		const zoomInButton = page.getByRole('button', { name: 'Zoom in' });
+		const resetZoomButton = page.getByRole('button', { name: 'Reset poster zoom to fit' });
+
+		await expect.element(zoomOutButton).toBeDisabled();
+		await expect.element(resetZoomButton).toHaveTextContent('100%');
+		await zoomInButton.click();
+		await expect.element(resetZoomButton).toHaveTextContent('125%');
+		await expect.element(zoomOutButton).toBeEnabled();
+		await resetZoomButton.click();
+		await expect.element(resetZoomButton).toHaveTextContent('100%');
+		await expect.element(zoomOutButton).toBeDisabled();
+
 		await page.getByRole('button', { name: 'Close' }).click();
 		await expect
 			.element(page.getByRole('dialog', { name: 'Biosensors 2023 poster' }))

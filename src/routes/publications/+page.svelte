@@ -1,5 +1,33 @@
 <script lang="ts">
+	import MinusIcon from '@lucide/svelte/icons/minus';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+
+	const POSTER_ZOOM_MIN = 100;
+	const POSTER_ZOOM_MAX = 300;
+	const POSTER_ZOOM_STEP = 25;
+
+	let posterZoom = $state(POSTER_ZOOM_MIN);
+
+	function updatePosterZoom(nextZoom: number) {
+		posterZoom = Math.min(POSTER_ZOOM_MAX, Math.max(POSTER_ZOOM_MIN, nextZoom));
+	}
+
+	function handlePosterKeydown(event: KeyboardEvent) {
+		if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+		if (event.key === '+' || event.key === '=') {
+			event.preventDefault();
+			updatePosterZoom(posterZoom + POSTER_ZOOM_STEP);
+		} else if (event.key === '-') {
+			event.preventDefault();
+			updatePosterZoom(posterZoom - POSTER_ZOOM_STEP);
+		} else if (event.key === '0') {
+			event.preventDefault();
+			updatePosterZoom(POSTER_ZOOM_MIN);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -91,22 +119,78 @@
 				<div class="mt-6 flex flex-wrap gap-3">
 					<Dialog.Root>
 						<Dialog.Trigger
+							onclick={() => updatePosterZoom(POSTER_ZOOM_MIN)}
 							class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
 							View poster
 						</Dialog.Trigger>
 						<Dialog.Content
-							class="max-h-[calc(100vh-2rem)] w-fit max-w-[calc(100vw-2rem)] overflow-auto p-3 pt-10 sm:max-w-[calc(100vw-2rem)]"
+							onkeydown={handlePosterKeydown}
+							class="max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-6xl grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-6xl"
 						>
 							<Dialog.Title class="sr-only">Biosensors 2023 poster</Dialog.Title>
 							<Dialog.Description class="sr-only">
-								Poster for the piezoresistive thin-film biopatch project.
+								Poster for the piezoresistive thin-film biopatch project. Use the zoom controls
+								to inspect the poster in more detail.
 							</Dialog.Description>
-							<img
-								src="https://assets.yunhocho.com/images/Biosensors%202023%20Poster.jpg"
-								alt="Biosensors 2023 poster for the piezoresistive thin-film biopatch project"
-								class="mx-auto block h-auto max-h-[calc(100vh-3.5rem)] w-auto max-w-full rounded-md"
-							/>
+
+							<div class="flex items-center justify-between gap-3 border-b px-3 py-2 pr-12">
+								<span class="hidden text-xs font-medium text-muted-foreground sm:inline">
+									Poster preview
+								</span>
+								<div
+									class="flex items-center gap-1"
+									role="group"
+									aria-label="Poster zoom controls"
+								>
+									<Button
+										variant="outline"
+										size="icon"
+										class="size-8"
+										disabled={posterZoom === POSTER_ZOOM_MIN}
+										onclick={() => updatePosterZoom(posterZoom - POSTER_ZOOM_STEP)}
+										aria-label="Zoom out"
+										title="Zoom out (−)"
+									>
+										<MinusIcon />
+									</Button>
+									<Button
+										variant="ghost"
+										size="sm"
+										class="min-w-16 px-2 font-mono text-xs tabular-nums"
+										onclick={() => updatePosterZoom(POSTER_ZOOM_MIN)}
+										aria-label="Reset poster zoom to fit"
+										title="Reset to fit (0)"
+									>
+										{posterZoom}%
+									</Button>
+									<Button
+										variant="outline"
+										size="icon"
+										class="size-8"
+										disabled={posterZoom === POSTER_ZOOM_MAX}
+										onclick={() => updatePosterZoom(posterZoom + POSTER_ZOOM_STEP)}
+										aria-label="Zoom in"
+										title="Zoom in (+)"
+									>
+										<PlusIcon />
+									</Button>
+								</div>
+							</div>
+
+							<div class="min-h-0 overflow-auto overscroll-contain bg-muted/30 p-3">
+								<div
+									class="mx-auto w-fit origin-top"
+									style:zoom={posterZoom / 100}
+									data-testid="poster-canvas"
+								>
+									<img
+										src="https://assets.yunhocho.com/images/Biosensors%202023%20Poster.jpg"
+										alt="Biosensors 2023 poster for the piezoresistive thin-film biopatch project"
+										class="block h-auto max-h-[calc(100dvh-7rem)] w-auto max-w-[calc(100vw-3.5rem)] rounded-md"
+									/>
+								</div>
+							</div>
 						</Dialog.Content>
 					</Dialog.Root>
 				</div>
