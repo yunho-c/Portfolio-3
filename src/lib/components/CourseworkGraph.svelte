@@ -47,9 +47,9 @@
 	let pinnedId = $state<string | null>(null);
 	let releasingId = $state<string | null>(null);
 	let entranceMode = $state<EntranceMode>('distributed');
-	let labelMode = $state<LabelMode>('code');
-	let labelTextSize = $state(10);
-	let wrapTitles = $state(false);
+	let labelMode = $state<LabelMode>('title');
+	let labelTextSize = $state(13);
+	let wrapTitles = $state(true);
 	let panInteraction: PanInteraction | null = null;
 	let hoverCloseTimer: number | undefined;
 	let releaseTimer: number | undefined;

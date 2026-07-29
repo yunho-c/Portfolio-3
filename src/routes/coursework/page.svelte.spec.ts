@@ -64,23 +64,30 @@ describe('/coursework/+page.svelte', () => {
 
 		await page.getByRole('button', { name: 'Graph settings' }).click();
 		await expect.element(page.getByRole('heading', { name: 'Graph settings' })).toBeVisible();
-		await page.getByRole('button', { name: 'Course title' }).click();
-		expect(document.querySelector('[data-course-node="CS 1000"] text')?.textContent?.trim()).toBe(
-			'Foundations'
+		await expect.element(page.getByRole('button', { name: 'Distributed' })).toHaveAttribute(
+			'aria-pressed',
+			'true'
 		);
 		await expect.element(page.getByRole('button', { name: 'Course title' })).toHaveAttribute(
 			'aria-pressed',
 			'true'
 		);
+		expect(document.querySelector('[data-course-node="CS 1000"] text')?.textContent?.trim()).toBe(
+			'Foundations'
+		);
 		const wrapTitles = page.getByRole('button', { name: 'Wrap titles' });
-		await wrapTitles.click();
 		await expect.element(wrapTitles).toHaveAttribute('aria-pressed', 'true');
 		expect(
 			Array.from(document.querySelectorAll('[data-course-node="CS 2000"] tspan')).map((line) =>
 				line.textContent?.trim()
 			)
 		).toEqual(['Systems Architecture', 'and Design']);
+		await wrapTitles.click();
+		await expect.element(wrapTitles).toHaveAttribute('aria-pressed', 'false');
+		await wrapTitles.click();
+		await expect.element(wrapTitles).toHaveAttribute('aria-pressed', 'true');
 		const textSize = page.getByLabelText('Text size');
+		await expect.element(textSize).toHaveValue(13);
 		await textSize.fill('14');
 		await expect.element(page.getByRole('img', { name: 'Course relationship map' })).toHaveAttribute(
 			'data-label-size',
