@@ -151,7 +151,7 @@
 
 		<div class="space-y-6">
 			<section
-				class="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8"
+				class="rounded-xl bg-card p-6 sm:p-8"
 				aria-labelledby="sew-mimic-title"
 			>
 				<div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
@@ -198,7 +198,7 @@
 			</section>
 
 			<section
-				class="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8"
+				class="rounded-xl bg-card p-6 sm:p-8"
 				aria-labelledby="biopatch-title"
 			>
 				<div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
@@ -217,9 +217,11 @@
 				</h2>
 
 				<p class="mt-4 text-sm leading-6 text-muted-foreground">
-					<span class="font-semibold text-foreground">Yunho Cho</span>, Hojin Seo, Giuliane
+					<span class="font-semibold text-foreground">Yunho Cho*</span>, Hojin Seo*, Giuliane
 					Paschoal, Xiaoqing Yu, and Tequila A. L. Harris
 				</p>
+
+				<p class="mt-2 text-xs text-muted-foreground">* Equal contribution</p>
 
 				<div class="mt-6 flex flex-wrap gap-3">
 					<Dialog.Root>
