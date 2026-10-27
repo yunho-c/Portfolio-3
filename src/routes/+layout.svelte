@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import Header from '$lib/components/Header.svelte';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.png';
 	import {
 		createUiPreferences,
 		provideUiPreferences
@@ -38,7 +38,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" type="image/png" sizes="256x256" href={favicon} />
 </svelte:head>
 
 <svelte:window onkeydown={handlePreferencesKeydown} />
