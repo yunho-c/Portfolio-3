@@ -15,25 +15,25 @@
 	<article class="mx-auto max-w-[920px] px-5 py-16 sm:px-6 sm:py-24">
 		<header class="about-reveal border-b border-border pb-16 sm:pb-20" style="--reveal-delay: 80ms">
 			<div class="mx-auto max-w-3xl">
-				<p class="mb-5 text-xs font-semibold tracking-[0.24em] text-muted-foreground uppercase">
-					About / 소개
-				</p>
 				<h1
 					class="max-w-3xl text-5xl leading-[0.98] font-bold tracking-[-0.045em] text-foreground sm:text-6xl md:text-7xl"
 				>
-					Hi there!<span class="text-muted-foreground">—</span><span lang="ko">안녕하세요!</span>
+					Hi there!<span class="text-muted-foreground">—</span><span class="text-gray-500" lang="ko">안녕하세요!</span>
 				</h1>
 			</div>
 
 			<div
 				class="mx-auto mt-12 max-w-3xl space-y-6 text-lg leading-relaxed text-foreground/90 sm:text-xl"
 			>
-				<p>
-					My name is Yunho—or <span lang="ko" class="font-medium text-foreground">조윤호</span> in
+				<!-- <p>
+					My name is Yunho.
+					—or <span lang="ko" class="font-medium text-foreground">조윤호</span> in
 					Korean.
-				</p>
+				</p> -->
 				<p>
-					I am a graduate student pursuing an M.S. degree in robotics,
+					I am a graduate student pursuing an M.S. degree in <span class="font-medium"
+						>robotics</span
+					>,
 					advised by <a href="https://www.shreyaskousik.com/" class="inline-link"
 						>Prof. Shreyas Kousik</a
 					>
@@ -41,8 +41,10 @@
 					<a href="https://saferoboticslab.me.gatech.edu/" class="inline-link"
 						>Safe Robotics Lab</a
 					>
-					at Georgia Tech. Before that, I received a bachelor’s degree in mechanical engineering with
-					a minor in psychology at Georgia Tech.
+					at Georgia Tech. Before that, I received a bachelor’s degree in <span class="font-medium"
+						>mechanical engineering</span
+					>
+					with a minor in <span class="font-medium">psychology</span> at Georgia Tech.
 				</p>
 				<p class="text-muted-foreground">
 					I like to run, listen to music, read webtoons, take photos, and play sim racing games.

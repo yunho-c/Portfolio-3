@@ -111,7 +111,7 @@
 				class="intro-line intro-part mt-8 text-2xl font-medium leading-snug text-muted-foreground sm:text-3xl"
 				style="--intro-delay: 4740ms; --skip-intro-delay: 90ms"
 			>
-				I am a machine learning engineer interested in foundational
+				I am a machine learning engineer interested in
 				<span class="mystic-highlight text-foreground" style="--glint-delay: 6780ms">language</span>,
 				<span class="mystic-highlight text-foreground" style="--glint-delay: 7780ms">vision</span>, and
 				<span class="mystic-highlight text-foreground" style="--glint-delay: 8780ms"
