@@ -40,7 +40,7 @@
 			<Button
 				variant="link"
 				href="https://blog.yunhocho.com/"
-				class="text-sm font-medium text-gray-600 transition-all hover:text-amber-500 hover:drop-shadow-[0_0_5px_rgba(245,158,11,0.1)] dark:text-gray-400 dark:hover:text-amber-400 dark:hover:drop-shadow-[0_0_5px_rgba(245,158,11,0.8)]"
+				class="text-sm font-medium text-gray-600 transition-all hover:text-blue-500 hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.1)] dark:text-gray-400 dark:hover:text-blue-400 dark:hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]"
 				>Blog</Button
 			>
 		</div>
