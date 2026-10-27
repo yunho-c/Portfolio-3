@@ -403,6 +403,16 @@
 		content: none;
 	}
 
+	:global(.project-prose blockquote) {
+		font-weight: inherit;
+		font-style: normal;
+	}
+
+	:global(.project-prose blockquote p:first-of-type::before),
+	:global(.project-prose blockquote p:last-of-type::after) {
+		content: none;
+	}
+
 	:global(.project-hover-note) {
 		appearance: none;
 		margin: 0;

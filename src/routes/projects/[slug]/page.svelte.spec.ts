@@ -31,6 +31,30 @@ describe('/projects/[slug]/+page.svelte', () => {
 		expect(getComputedStyle(inlineCode!, '::after').content).toBe('none');
 	});
 
+	it('renders blockquotes using only author-provided emphasis', async () => {
+		render(Page, {
+			data: {
+				project,
+				content: '> Plain, **bold**, and _italic_.',
+				galleries: []
+			}
+		});
+
+		const blockquote = document.querySelector<HTMLElement>('.project-prose blockquote');
+		const quoteParagraph = document.querySelector<HTMLElement>('.project-prose blockquote p');
+		const boldText = quoteParagraph?.querySelector<HTMLElement>('strong');
+		const italicText = quoteParagraph?.querySelector<HTMLElement>('em');
+		expect(quoteParagraph?.textContent).toBe('Plain, bold, and italic.');
+		expect(getComputedStyle(blockquote!).fontWeight).toBe('400');
+		expect(getComputedStyle(blockquote!).fontStyle).toBe('normal');
+		expect(Number(getComputedStyle(boldText!).fontWeight)).toBeGreaterThan(
+			Number(getComputedStyle(blockquote!).fontWeight)
+		);
+		expect(getComputedStyle(italicText!).fontStyle).toBe('italic');
+		expect(getComputedStyle(quoteParagraph!, '::before').content).toBe('none');
+		expect(getComputedStyle(quoteParagraph!, '::after').content).toBe('none');
+	});
+
 	it('shows hover-note content when its inline trigger is hovered', async () => {
 		render(Page, {
 			data: {
