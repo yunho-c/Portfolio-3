@@ -177,7 +177,7 @@
 
 				<p class="mt-2 text-xs text-muted-foreground">* Equal contribution</p>
 
-				<div class="mt-6 flex flex-wrap gap-3">
+				<div class="mt-3 flex flex-wrap justify-end gap-3">
 					<a
 						href="https://arxiv.org/abs/2602.01632"
 						target="_blank"
@@ -223,7 +223,7 @@
 
 				<p class="mt-2 text-xs text-muted-foreground">* Equal contribution</p>
 
-				<div class="mt-6 flex flex-wrap gap-3">
+				<div class="mt-3 flex flex-wrap justify-end gap-3">
 					<Dialog.Root>
 						<Dialog.Trigger
 							onclick={resetPosterZoomForOpen}
