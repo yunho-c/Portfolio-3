@@ -155,9 +155,7 @@
 				aria-labelledby="sew-mimic-title"
 			>
 				<div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-					<span>arXiv preprint</span>
-					<span aria-hidden="true">·</span>
-					<span>2026</span>
+					<span>arXiv preprint (2026)</span>
 				</div>
 
 				<h2
@@ -202,9 +200,7 @@
 				aria-labelledby="biopatch-title"
 			>
 				<div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-					<span>Biosensors 2023</span>
-					<span aria-hidden="true">·</span>
-					<span>Poster</span>
+					<span>Biosensors 2023 (Poster)</span>
 				</div>
 
 				<h2
