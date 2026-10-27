@@ -126,7 +126,7 @@
 				style="--intro-delay: 11140ms; --skip-intro-delay: 180ms"
 			>
 				I am generally interested about everything and quite
-				<span class="cursor-help text-foreground transition-all duration-300 hover:blur-[3px]"
+				<span class="cursor-help text-foreground blur-[3px] transition-all duration-300 hover:blur-none"
 					>distracted</span
 				>, which naturally leads me to work on many side projects... some of which you can check out below :)
 			</p>
