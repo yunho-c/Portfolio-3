@@ -48,7 +48,7 @@
 			<Button
 				variant="link"
 				href="https://github.com/yunho-c"
-				class="text-sm font-medium text-gray-600 transition-all hover:text-purple-500 hover:drop-shadow-[0_0_5px_rgba(168,85,247,0.1)] dark:text-gray-400 dark:hover:text-purple-400 dark:hover:drop-shadow-[0_0_5px_rgba(168,85,247,0.8)]"
+				class="text-sm font-medium text-gray-600 transition-all hover:text-[#8534F3] hover:drop-shadow-[0_0_5px_rgba(133,52,243,0.1)] dark:text-gray-400 dark:hover:text-[#8534F3] dark:hover:drop-shadow-[0_0_5px_rgba(133,52,243,0.8)]"
 				>GitHub</Button
 			>
 		</div>
