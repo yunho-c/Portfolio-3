@@ -177,20 +177,20 @@
 
 				<div class="mt-3 flex flex-wrap justify-end gap-3">
 					<a
-						href="https://arxiv.org/abs/2602.01632"
+						href="https://sew-mimic.com"
 						target="_blank"
 						rel="noreferrer"
 						class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 					>
-						Read paper
+						Website
 					</a>
 					<a
-						href="https://sew-mimic.com"
+						href="https://arxiv.org/abs/2602.01632"
 						target="_blank"
 						rel="noreferrer"
-						class="inline-flex h-9 items-center rounded-md border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+						class="inline-flex h-9 items-center rounded-md border border-red-800 bg-background px-4 text-sm font-medium text-red-800 transition-colors hover:bg-accent"
 					>
-						Project page
+						arXiv
 					</a>
 				</div>
 			</section>
