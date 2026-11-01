@@ -142,7 +142,7 @@
 			<hr />
 
 			<section>
-				<h2>🌠 I envision...</h2>
+				<h2>Vision</h2>
 				<p>
 					My life goal is to tackle underserved problems (e.g., affordable and useful assistive
 					technology devices) and create solutions that directly improve individuals’ quality of
