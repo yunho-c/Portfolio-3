@@ -39,13 +39,13 @@
 					in the
 					<a href="https://saferoboticslab.me.gatech.edu/" class="inline-link"
 						>Safe Robotics Lab</a
-					>. Before that, I received a bachelor’s degree in <span class="font-medium"
+					>. I received a bachelor’s degree in <span class="font-medium"
 						>mechanical engineering</span
 					>
 					with a minor in <span class="font-medium">psychology</span> at Georgia Tech.
 				</p>
 				<p class="text-muted-foreground">
-					I like to run, listen to music, read webtoons, take photos, and play sim racing games.
+					In free time, I like to run, listen to music, take photos, and play sim racing games.
 				</p>
 			</div>
 		</header>
