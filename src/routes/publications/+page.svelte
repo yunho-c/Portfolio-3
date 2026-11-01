@@ -152,6 +152,47 @@
 		<div class="space-y-6">
 			<section
 				class="rounded-xl bg-card p-6 sm:p-8"
+				aria-labelledby="xrt-title"
+			>
+				<div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+					<span>arXiv preprint (2026)</span>
+				</div>
+
+				<h2
+					id="xrt-title"
+					class="mt-4 text-2xl leading-tight font-semibold tracking-tight text-card-foreground sm:text-3xl"
+				>
+					Evaluating Lightweight Contact Feedback in Dual-Operator Collaborative Humanoid
+					Teleoperation
+				</h2>
+
+				<p class="mt-4 text-sm leading-6 text-muted-foreground">
+					Austin Graves, Chuizheng Kong, <span class="font-semibold text-foreground">Yunho Cho</span>,
+					Yuanshao Yang, Advaith Nidumukkala, Shreyas Kousik, and Mohsen Moghaddam
+				</p>
+
+				<div class="mt-3 flex flex-wrap justify-end gap-3">
+					<a
+						href="https://xrt-teleop.github.io"
+						target="_blank"
+						rel="noreferrer"
+						class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+					>
+						Website
+					</a>
+					<a
+						href="https://arxiv.org/abs/2610.24257"
+						target="_blank"
+						rel="noreferrer"
+						class="inline-flex h-9 items-center rounded-md border border-red-800 bg-background px-4 text-sm font-medium text-red-800 transition-colors hover:bg-accent"
+					>
+						arXiv
+					</a>
+				</div>
+			</section>
+
+			<section
+				class="rounded-xl bg-card p-6 sm:p-8"
 				aria-labelledby="sew-mimic-title"
 			>
 				<div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">

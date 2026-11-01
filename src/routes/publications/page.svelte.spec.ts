@@ -4,12 +4,26 @@ import { render } from 'vitest-browser-svelte';
 import Page from './+page.svelte';
 
 describe('/publications/+page.svelte', () => {
-	it('renders the publication and its source links', async () => {
+	it('renders the publications and their source links', async () => {
 		render(Page);
 
 		await expect
 			.element(page.getByRole('heading', { level: 1, name: 'Publications' }))
 			.toBeVisible();
+		const xrt = page.getByRole('region', {
+			name: 'Evaluating Lightweight Contact Feedback in Dual-Operator Collaborative Humanoid Teleoperation'
+		});
+		await expect.element(xrt.getByRole('heading', { level: 2 })).toBeVisible();
+		await expect
+			.element(xrt.getByRole('link', { name: 'Website' }))
+			.toHaveAttribute('href', 'https://xrt-teleop.github.io');
+		await expect
+			.element(xrt.getByRole('link', { name: 'arXiv' }))
+			.toHaveAttribute('href', 'https://arxiv.org/abs/2610.24257');
+
+		const sewMimic = page.getByRole('region', {
+			name: 'A Closed-Form Geometric Retargeting Solver for Upper Body Humanoid Robot Teleoperation'
+		});
 		await expect
 			.element(
 				page.getByRole('heading', {
@@ -19,10 +33,10 @@ describe('/publications/+page.svelte', () => {
 			)
 			.toBeVisible();
 		await expect
-			.element(page.getByRole('link', { name: 'Project page' }))
+			.element(sewMimic.getByRole('link', { name: 'Website' }))
 			.toHaveAttribute('href', 'https://sew-mimic.com');
 		await expect
-			.element(page.getByRole('link', { name: 'Read paper' }))
+			.element(sewMimic.getByRole('link', { name: 'arXiv' }))
 			.toHaveAttribute('href', 'https://arxiv.org/abs/2602.01632');
 		await expect
 			.element(
@@ -32,8 +46,7 @@ describe('/publications/+page.svelte', () => {
 				})
 			)
 			.toBeVisible();
-		await expect.element(page.getByText('Biosensors 2023')).toBeVisible();
-		await expect.element(page.getByText('Poster', { exact: true })).toBeVisible();
+		await expect.element(page.getByText('Biosensors 2023 (Poster)', { exact: true })).toBeVisible();
 
 		const posterButton = page.getByRole('button', { name: 'View poster' });
 		await posterButton.click();
