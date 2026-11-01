@@ -30,7 +30,7 @@
 					Korean.
 				</p> -->
 				<p>
-					I am a graduate student pursuing an M.S. degree in <span class="font-medium"
+					I am a graduate student at Georgia Tech pursuing an M.S. degree in <span class="font-medium"
 						>robotics</span
 					>,
 					advised by <a href="https://www.shreyaskousik.com/" class="inline-link"
@@ -39,8 +39,7 @@
 					in the
 					<a href="https://saferoboticslab.me.gatech.edu/" class="inline-link"
 						>Safe Robotics Lab</a
-					>
-					at Georgia Tech. Before that, I received a bachelor’s degree in <span class="font-medium"
+					>. Before that, I received a bachelor’s degree in <span class="font-medium"
 						>mechanical engineering</span
 					>
 					with a minor in <span class="font-medium">psychology</span> at Georgia Tech.
