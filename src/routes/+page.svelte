@@ -18,7 +18,7 @@
 	const heroGridCells = createHeroGridCells({ cellMedia: data.heroCollageMedia });
 	const featuredProjects = data.projects.slice(0, 4);
 	const introDuration =
-		Math.max(14040, featuredProjects.length > 0 ? 14440 + (featuredProjects.length - 1) * 220 : 0) + 100;
+		Math.max(9140, featuredProjects.length > 0 ? 9540 + (featuredProjects.length - 1) * 220 : 0) + 100;
 	const greetingWords = [
 		{ text: 'Hi,', delay: 0 },
 		{ text: 'nice', delay: 800 },
@@ -78,7 +78,7 @@
 
 <svelte:window onpointerdown={handleIntroPointer} onkeydown={handleIntroKeydown} />
 
-<InteractiveHero cells={heroGridCells} activationDelay={playIntro ? 12040 : 0} hoverIntentDelay={1000}>
+<InteractiveHero cells={heroGridCells} activationDelay={playIntro ? 7740 : 0} hoverIntentDelay={1000}>
 	<main
 		class="mx-auto max-w-[840px] px-5 pt-24 pb-20 sm:px-6 md:pt-40 md:pb-32"
 		class:intro-skip-out={skipPhase === 'out'}
@@ -106,29 +106,35 @@
 				>
 			</h1>
 
-			<!-- Secondary Thesis (Large, Muted with Highlighted Keywords) -->
+			<!-- Academic background -->
 			<p
-				class="intro-line intro-part mt-8 text-2xl font-medium leading-snug text-muted-foreground sm:text-3xl"
+				class="intro-line intro-part mt-8 text-lg leading-relaxed text-foreground/90 sm:text-xl"
 				style="--intro-delay: 4740ms; --skip-intro-delay: 90ms"
 			>
-				I am a machine learning engineer interested in
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 6780ms">language</span>,
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 7780ms">vision</span>, and
-				<span class="mystic-highlight text-foreground" style="--glint-delay: 8780ms"
-					>human-computer interaction</span
+				I am a graduate student at <a
+					href="https://gatech.edu"
+					class="intro-affiliation font-medium text-[#8F713D] dark:text-[#B39051]">Georgia Tech</a
+				> pursuing an M.S. degree in <span class="font-medium text-foreground">robotics</span>,
+				advised by <a href="https://www.shreyaskousik.com/" class="inline-link"
+					>Prof. Shreyas Kousik</a
 				>
-				technologies.
+				in the
+				<a href="https://saferoboticslab.me.gatech.edu/" class="inline-link">Safe Robotics Lab</a>.
+				I received a bachelor’s degree in <span class="font-medium text-foreground"
+					>mechanical engineering</span
+				>
+				with a minor in <span class="font-medium text-foreground">psychology</span> at <a
+					href="https://gatech.edu"
+					class="intro-affiliation font-medium text-[#8F713D] dark:text-[#B39051]">Georgia Tech</a
+				>.
 			</p>
 
-			<!-- Tertiary Context (Smaller, Playful) -->
+			<!-- Outside of work -->
 			<p
-				class="intro-line intro-part mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground/80 sm:text-xl"
-				style="--intro-delay: 11140ms; --skip-intro-delay: 180ms"
+				class="intro-line intro-part mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl"
+				style="--intro-delay: 6840ms; --skip-intro-delay: 180ms"
 			>
-				I am generally interested about everything and quite
-				<span class="cursor-help text-foreground blur-[3px] transition-all duration-300 hover:blur-none"
-					>distracted</span
-				>, which naturally leads me to work on many side projects... some of which you can check out below :)
+				In free time, I like to run, listen to music, take photos, and play sim racing games.
 			</p>
 		</div>
 	</main>
@@ -143,7 +149,7 @@
 		class="intro-line mb-8 flex items-center justify-between"
 		class:play-home-intro={playIntro}
 		class:play-skip-projects={playSkipSequence}
-		style="--intro-delay: 13140ms"
+		style="--intro-delay: 8240ms"
 	>
 		<h3 class="text-2xl font-bold tracking-tight text-foreground">Featured Projects</h3>
 		<a href="/projects" class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
@@ -154,7 +160,7 @@
 		projects={featuredProjects}
 		reveal={playIntro || playSkipSequence}
 		revealVariant={playSkipSequence ? 'skip' : 'full'}
-		revealDelay={playSkipSequence ? 1080 : 13640}
+		revealDelay={playSkipSequence ? 1080 : 8740}
 		revealInterval={220}
 	/>
 </div>
@@ -211,6 +217,7 @@
 	:global(.interactive-hero.collage-active) .intro-panel {
 		--foreground: oklch(0.97 0.012 88);
 		--muted-foreground: oklch(0.87 0.018 88);
+		--primary: oklch(0.97 0.012 88);
 		text-shadow: 0 0.08rem 0.35rem oklch(0.03 0.01 75 / 42%);
 	}
 
@@ -221,9 +228,8 @@
 		backdrop-filter: blur(0.9rem) saturate(0.82);
 	}
 
-	:global(.interactive-hero.collage-active) .mystic-highlight {
-		color: oklch(0.84 0.15 82) !important;
-		text-shadow: 0 0 0.7rem oklch(0.78 0.14 82 / 28%);
+	:global(.interactive-hero.collage-active) .intro-affiliation {
+		color: oklch(0.84 0.15 82);
 	}
 
 	.play-home-intro .intro-line,
@@ -234,11 +240,6 @@
 
 	.written-word {
 		display: inline-block;
-	}
-
-	.play-home-intro .mystic-highlight {
-		animation: keyword-glint 2000ms cubic-bezier(0.22, 1, 0.36, 1) both;
-		animation-delay: var(--glint-delay);
 	}
 
 	@keyframes intro-awaken {
@@ -311,19 +312,6 @@
 		}
 	}
 
-	@keyframes keyword-glint {
-		0%,
-		100% {
-			color: var(--foreground);
-			text-shadow: 0 0 0 oklch(0.78 0.14 82 / 0%);
-		}
-
-		45% {
-			color: oklch(0.7 0.15 78);
-			text-shadow: 0 0 0.65rem oklch(0.78 0.14 82 / 55%);
-		}
-	}
-
 	@media (min-width: 40rem) {
 		.intro-panel::before {
 			inset-block: -2.5rem;
@@ -353,7 +341,6 @@
 
 		.play-home-intro .intro-line,
 		.intro-line.play-home-intro,
-		.play-home-intro .mystic-highlight,
 		.play-skip-sequence .intro-part,
 		.intro-line.play-skip-projects {
 			animation: none;
