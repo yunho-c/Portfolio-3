@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { asset, resolve } from '$app/paths';
-	import { Button } from '$lib/components/ui/button/index.js';
 </script>
 
 <svelte:head>
@@ -56,20 +55,10 @@
 			class="prose prose-zinc prose-lg sm:prose-xl dark:prose-invert mx-auto max-w-3xl pt-14 sm:pt-16 prose-headings:tracking-tight prose-h2:mb-4 prose-p:leading-relaxed prose-p:text-foreground/90 prose-li:leading-relaxed prose-li:text-foreground/90 prose-a:text-foreground prose-a:decoration-muted-foreground/50 prose-a:underline-offset-4"
 		>
 			<section>
-				<div class="not-prose flex items-center justify-between gap-4">
+				<div class="not-prose">
 					<h2 class="text-3xl leading-tight font-bold tracking-tight text-foreground sm:text-4xl">
 						Background
 					</h2>
-					<Button
-						href={asset('/resume.pdf')}
-						target="_blank"
-						rel="noreferrer"
-						variant="outline"
-						size="lg"
-						class="h-12 px-8 text-base shadow-sm transition-[box-shadow,background-color,color] hover:shadow-md"
-					>
-						Resume
-					</Button>
 				</div>
 				<p class="mt-4">
 					I am a generalist with diverse interests—and love delving into unfamiliar fields within
@@ -109,13 +98,16 @@
 						</ul>
 					</li>
 				</ul>
-			</section>
 
-			<hr />
-
-			<section>
-				<h2>Links</h2>
-				<div class="not-prose grid gap-4 sm:grid-cols-3">
+				<div class="not-prose mt-8 grid gap-4 sm:grid-cols-3">
+					<a
+						href={asset('/resume.pdf')}
+						target="_blank"
+						rel="noreferrer"
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
+					>
+						Resume
+					</a>
 					<a
 						href={resolve('/experience')}
 						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
@@ -127,14 +119,6 @@
 						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
 					>
 						Coursework
-					</a>
-					<a
-						href="https://blog.yunhocho.com"
-						target="_blank"
-						rel="noreferrer"
-						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
-					>
-						Blog
 					</a>
 				</div>
 			</section>
