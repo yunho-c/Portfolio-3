@@ -133,9 +133,8 @@
 			<section>
 				<h2>Vision</h2>
 				<p>
-					My life goal is to tackle underserved problems (e.g., affordable and useful assistive
-					technology devices) and create solutions that directly improve individuals’ quality of
-					life.
+					My life's goal is to tackle "underserved" problems and create solutions that directly improve
+					individuals’ quality of life.
 				</p>
 				<p>So far, I have encountered a few important topics that fit this description:</p>
 
