@@ -12,65 +12,19 @@
 
 <main class="min-h-screen bg-background">
 	<article class="mx-auto max-w-[920px] px-5 py-16 sm:px-6 sm:py-24">
-		<header class="about-reveal border-b border-border pb-14" style="--reveal-delay: 80ms">
+		<header class="about-reveal border-b border-border pb-10 sm:pb-12" style="--reveal-delay: 80ms">
 			<div class="mx-auto max-w-3xl">
 				<h1
 					class="max-w-3xl text-5xl leading-[0.98] font-bold tracking-[-0.045em] text-foreground sm:text-6xl md:text-7xl"
 				>
-					Hi there!<span class="text-muted-foreground">—</span><span class="text-gray-500" lang="ko">안녕하세요!</span>
+					Hi there!<span class="text-muted-foreground">—</span><span class="inline-block text-gray-500" lang="ko">안녕하세요!</span>
 				</h1>
-			</div>
-
-			<div
-				class="mx-auto mt-12 max-w-3xl space-y-6 text-lg leading-relaxed text-foreground/90 sm:text-xl"
-			>
-				<!-- <p>
-					My name is Yunho.
-					—or <span lang="ko" class="font-medium text-foreground">조윤호</span> in
-					Korean.
-				</p> -->
-				<p>
-					I am a graduate student at <a
-						href="https://gatech.edu"
-						class="font-medium text-[#8F713D] dark:text-[#B39051]">Georgia Tech</a
-					> pursuing an M.S. degree in <span class="font-medium"
-						>robotics</span
-					>,
-					advised by <a href="https://www.shreyaskousik.com/" class="inline-link"
-						>Prof. Shreyas Kousik</a
-					>
-					in the
-					<a href="https://saferoboticslab.me.gatech.edu/" class="inline-link"
-						>Safe Robotics Lab</a
-					>. I received a bachelor’s degree in <span class="font-medium"
-						>mechanical engineering</span
-					>
-					with a minor in <span class="font-medium">psychology</span> at <a
-						href="https://gatech.edu"
-						class="font-medium text-[#8F713D] dark:text-[#B39051]">Georgia Tech</a
-					>.
-				</p>
-				<p class="text-muted-foreground">
-					In free time, I like to run, listen to music, take photos, and play sim racing games.
-				</p>
-			</div>
-		</header>
-
-		<div
-			class="prose prose-zinc prose-lg sm:prose-xl dark:prose-invert mx-auto max-w-3xl pt-14 sm:pt-16 prose-headings:tracking-tight prose-h2:mb-4 prose-p:leading-relaxed prose-p:text-foreground/90 prose-li:leading-relaxed prose-li:text-foreground/90 prose-a:text-foreground prose-a:decoration-muted-foreground/50 prose-a:underline-offset-4"
-		>
-			<section>
-				<div class="not-prose">
-					<h2 class="text-3xl leading-tight font-bold tracking-tight text-foreground sm:text-4xl">
-						Background
-					</h2>
-				</div>
-				<p class="mt-4">
+				<p class="mt-8 text-lg leading-relaxed text-foreground/90 sm:text-xl">
 					I am a generalist with diverse interests—and love delving into unfamiliar fields within
 					engineering.
 				</p>
 
-				<div class="not-prose mt-8 grid gap-4 sm:grid-cols-3">
+				<div class="mt-8 grid gap-4 sm:grid-cols-3">
 					<a
 						href={asset('/resume.pdf')}
 						target="_blank"
@@ -92,7 +46,18 @@
 						Coursework
 					</a>
 				</div>
+			</div>
+		</header>
 
+		<div
+			class="prose prose-zinc prose-lg sm:prose-xl dark:prose-invert mx-auto max-w-3xl pt-10 sm:pt-12 prose-headings:tracking-tight prose-h2:mb-4 prose-p:leading-relaxed prose-p:text-foreground/90 prose-li:leading-relaxed prose-li:text-foreground/90 prose-a:text-foreground prose-a:decoration-muted-foreground/50 prose-a:underline-offset-4"
+		>
+			<section>
+				<div class="not-prose">
+					<h2 class="text-3xl leading-tight font-bold tracking-tight text-foreground sm:text-4xl">
+						Background
+					</h2>
+				</div>
 				<p>My areas of expertise-ish are:</p>
 				<ul>
 					<li><strong>Perception</strong>, control, and motion planning for robotic systems</li>
