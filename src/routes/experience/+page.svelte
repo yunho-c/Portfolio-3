@@ -24,7 +24,7 @@
 			period: 'Jan 2026 - May 2026',
 			logo: '/logos/tesla_motors_logo.jpg',
 			bullets: [
-				'Applied classical computer vision and ML models to identify manufacturing defects.',
+				'Applied classical computer vision and ML models to identify manufacturing defects in Giga Texas.',
 				'Created a semi-automated data annotation and augmentation pipeline for downstream model training and tuning.',
 				'Improved ML inference and database interaction latency by roughly 2000x, from 1.4 s to 0.8 ms per image.'
 			]
