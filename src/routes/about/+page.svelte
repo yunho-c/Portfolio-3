@@ -12,7 +12,7 @@
 
 <main class="min-h-screen bg-background">
 	<article class="mx-auto max-w-[920px] px-5 py-16 sm:px-6 sm:py-24">
-		<header class="about-reveal border-b border-border pb-16 sm:pb-20" style="--reveal-delay: 80ms">
+		<header class="about-reveal border-b border-border pb-14" style="--reveal-delay: 80ms">
 			<div class="mx-auto max-w-3xl">
 				<h1
 					class="max-w-3xl text-5xl leading-[0.98] font-bold tracking-[-0.045em] text-foreground sm:text-6xl md:text-7xl"
