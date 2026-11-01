@@ -76,6 +76,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Yunho Cho</title>
+</svelte:head>
+
 <svelte:window onpointerdown={handleIntroPointer} onkeydown={handleIntroKeydown} />
 
 <InteractiveHero cells={heroGridCells} activationDelay={playIntro ? 7740 : 0} hoverIntentDelay={1000}>
