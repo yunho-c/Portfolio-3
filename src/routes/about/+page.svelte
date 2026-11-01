@@ -65,6 +65,29 @@
 					engineering.
 				</p>
 
+				<div class="not-prose mt-8 grid gap-4 sm:grid-cols-3">
+					<a
+						href={asset('/resume.pdf')}
+						target="_blank"
+						rel="noreferrer"
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
+					>
+						Resume
+					</a>
+					<a
+						href={resolve('/experience')}
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
+					>
+						Experience
+					</a>
+					<a
+						href={resolve('/coursework')}
+						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
+					>
+						Coursework
+					</a>
+				</div>
+
 				<p>My areas of expertise-ish are:</p>
 				<ul>
 					<li><strong>Perception</strong>, control, and motion planning for robotic systems</li>
@@ -98,29 +121,6 @@
 						</ul>
 					</li>
 				</ul>
-
-				<div class="not-prose mt-8 grid gap-4 sm:grid-cols-3">
-					<a
-						href={asset('/resume.pdf')}
-						target="_blank"
-						rel="noreferrer"
-						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
-					>
-						Resume
-					</a>
-					<a
-						href={resolve('/experience')}
-						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
-					>
-						Experience
-					</a>
-					<a
-						href={resolve('/coursework')}
-						class="flex min-h-20 items-center justify-center rounded-lg bg-gray-100 p-3 text-center text-lg font-medium text-foreground transition-colors hover:bg-gray-200 sm:text-xl dark:bg-gray-800 dark:hover:bg-gray-700"
-					>
-						Coursework
-					</a>
-				</div>
 			</section>
 
 			<hr />
