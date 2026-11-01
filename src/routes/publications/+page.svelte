@@ -147,6 +147,14 @@
 	<article class="mx-auto max-w-[840px] px-5 py-16 sm:px-6 sm:py-24">
 		<header class="mb-12 text-center sm:mb-16">
 			<h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">Publications</h1>
+			<a
+				href="https://scholar.google.com/citations?user=NiU6Rt8AAAAJ"
+				target="_blank"
+				rel="noreferrer"
+				class="mt-4 inline-block text-sm font-medium text-gray-600 underline underline-offset-4 transition-all hover:text-blue-500 hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.1)] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring dark:text-gray-400 dark:hover:text-blue-400 dark:hover:drop-shadow-[0_0_5px_rgba(59,130,246,0.8)]"
+			>
+				Google Scholar
+			</a>
 		</header>
 
 		<div class="space-y-6">
