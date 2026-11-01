@@ -192,7 +192,7 @@
 						href="https://arxiv.org/abs/2610.24257"
 						target="_blank"
 						rel="noreferrer"
-						class="inline-flex h-9 items-center rounded-md border border-red-800 bg-background px-4 text-sm font-medium text-red-800 transition-colors hover:bg-accent"
+						class="inline-flex h-9 items-center rounded-md bg-red-900 px-4 text-sm font-medium text-white transition-colors hover:bg-red-900/90"
 					>
 						arXiv
 					</a>
@@ -237,7 +237,7 @@
 						href="https://arxiv.org/abs/2602.01632"
 						target="_blank"
 						rel="noreferrer"
-						class="inline-flex h-9 items-center rounded-md border border-red-800 bg-background px-4 text-sm font-medium text-red-800 transition-colors hover:bg-accent"
+						class="inline-flex h-9 items-center rounded-md bg-red-900 px-4 text-sm font-medium text-white transition-colors hover:bg-red-900/90"
 					>
 						arXiv
 					</a>
