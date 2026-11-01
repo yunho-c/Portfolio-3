@@ -48,7 +48,7 @@ describe('/publications/+page.svelte', () => {
 			.toBeVisible();
 		await expect.element(page.getByText('Biosensors 2023 (Poster)', { exact: true })).toBeVisible();
 
-		const posterButton = page.getByRole('button', { name: 'View poster' });
+		const posterButton = page.getByRole('button', { name: 'View' });
 		await posterButton.click();
 		await expect
 			.element(page.getByRole('dialog', { name: 'Biosensors 2023 poster' }))

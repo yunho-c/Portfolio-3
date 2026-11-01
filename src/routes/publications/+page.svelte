@@ -274,7 +274,7 @@
 							onclick={resetPosterZoomForOpen}
 							class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
-							View poster
+							View
 						</Dialog.Trigger>
 						<Dialog.Content
 							onkeydown={handlePosterKeydown}
