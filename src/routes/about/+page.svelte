@@ -30,7 +30,10 @@
 					Korean.
 				</p> -->
 				<p>
-					I am a graduate student at Georgia Tech pursuing an M.S. degree in <span class="font-medium"
+					I am a graduate student at <a
+						href="https://gatech.edu"
+						class="font-medium text-[#8F713D] dark:text-[#B39051]">Georgia Tech</a
+					> pursuing an M.S. degree in <span class="font-medium"
 						>robotics</span
 					>,
 					advised by <a href="https://www.shreyaskousik.com/" class="inline-link"
@@ -42,7 +45,10 @@
 					>. I received a bachelor’s degree in <span class="font-medium"
 						>mechanical engineering</span
 					>
-					with a minor in <span class="font-medium">psychology</span> at Georgia Tech.
+					with a minor in <span class="font-medium">psychology</span> at <a
+						href="https://gatech.edu"
+						class="font-medium text-[#8F713D] dark:text-[#B39051]">Georgia Tech</a
+					>.
 				</p>
 				<p class="text-muted-foreground">
 					In free time, I like to run, listen to music, take photos, and play sim racing games.
