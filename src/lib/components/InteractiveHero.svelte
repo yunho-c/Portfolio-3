@@ -5,12 +5,19 @@
 
 	interface Props {
 		cells: HeroGridCell[][];
+		interactive?: boolean;
 		activationDelay?: number;
 		hoverIntentDelay?: number;
 		children: Snippet;
 	}
 
-	let { cells, activationDelay = 0, hoverIntentDelay = 0, children }: Props = $props();
+	let {
+		cells,
+		interactive = false,
+		activationDelay = 0,
+		hoverIntentDelay = 0,
+		children
+	}: Props = $props();
 
 	let heroElement: HTMLElement;
 	let enabled = $state(false);
@@ -35,13 +42,14 @@
 	let transitionTimer: ReturnType<typeof setTimeout> | undefined;
 	let frameRequest: number | undefined;
 
+	const interactionAllowed = $derived(interactive && interactionSupported);
 	const rowCount = $derived(cells.length);
 	const columnCount = $derived(cells[0]?.length ?? 0);
 	const cellWidth = $derived(columnCount > 0 ? `${100 / columnCount}%` : '100%');
 	const cellHeight = $derived(rowCount > 0 ? `${100 / rowCount}%` : '100%');
 
 	$effect(() => {
-		if (!interactionSupported || enabled) return;
+		if (!interactionAllowed || enabled) return;
 
 		const timer = setTimeout(() => {
 			enabled = true;
@@ -51,7 +59,7 @@
 	});
 
 	$effect(() => {
-		if (!enabled || !pointerInside || hoverIntentSatisfied) return;
+		if (!interactionAllowed || !enabled || !pointerInside || hoverIntentSatisfied) return;
 
 		// Gate only the initial hero entry; moving between cells must not restart the intent clock.
 		const timer = setTimeout(() => {
@@ -72,8 +80,12 @@
 		const supportsInteraction = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 		const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		if (!supportsInteraction || prefersReducedMotion) return;
-		interactionSupported = true;
+		interactionSupported = supportsInteraction && !prefersReducedMotion;
+	});
+
+	$effect(() => {
+		if (!interactionAllowed) return;
+
 		window.addEventListener('keydown', handleGridToggle);
 
 		const uniqueImages = new Set(cells.flat().map(mediaPoster).filter(Boolean));
@@ -85,14 +97,29 @@
 
 		return () => {
 			window.removeEventListener('keydown', handleGridToggle);
-			if (dwellTimer) clearTimeout(dwellTimer);
-			if (leaveTimer) clearTimeout(leaveTimer);
-			if (transitionTimer) clearTimeout(transitionTimer);
-			if (frameRequest) cancelAnimationFrame(frameRequest);
+			resetInteraction();
 		};
 	});
 
+	function resetInteraction() {
+		if (dwellTimer) clearTimeout(dwellTimer);
+		if (leaveTimer) clearTimeout(leaveTimer);
+		if (transitionTimer) clearTimeout(transitionTimer);
+		if (frameRequest) cancelAnimationFrame(frameRequest);
+		dwellTimer = leaveTimer = transitionTimer = frameRequest = undefined;
+		enabled = false;
+		pointerInside = false;
+		hoverIntentSatisfied = false;
+		hoveredCell = activeCell = layerA = layerB = null;
+		activeLayer = outgoingLayer = incomingLayer = -1;
+		gridVisible = false;
+		transitionInProgress = false;
+		queuedCell = null;
+		candidateId = null;
+	}
+
 	function handleGridToggle(event: KeyboardEvent) {
+		if (!interactionAllowed) return;
 		if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
 
 		const target = event.target;
@@ -231,9 +258,9 @@
 	class:collage-active={activeCell !== null}
 	role="presentation"
 	bind:this={heroElement}
-	onpointerenter={handlePointerEnter}
-	onpointermove={handlePointerMove}
-	onpointerleave={handlePointerLeave}
+	onpointerenter={interactionAllowed ? handlePointerEnter : undefined}
+	onpointermove={interactionAllowed ? handlePointerMove : undefined}
+	onpointerleave={interactionAllowed ? handlePointerLeave : undefined}
 >
 	<div
 		class="hero-visuals"

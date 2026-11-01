@@ -249,7 +249,14 @@
 				aria-labelledby="biopatch-title"
 			>
 				<div class="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-					<span>Biosensors 2023 (Poster)</span>
+					<span>
+						<a
+							href="https://www.sciencedirect.com/special-issue/107CG4QT5L5"
+							target="_blank"
+							rel="noreferrer"
+							class="font-semibold underline-offset-4 hover:underline"
+						>Biosensors 2023</a> (Poster)
+					</span>
 				</div>
 
 				<h2
