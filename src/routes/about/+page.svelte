@@ -189,7 +189,7 @@
 			<section>
 				<h2>Talk</h2>
 				<p>
-					I am always open to a coffee chat! Send me an email at:
+					I am always open to chat. Send me an email at:
 					<span
 						class="not-prose ml-1.5 inline-flex flex-wrap items-center gap-1.5 align-middle"
 						aria-label="Email address shown in image fragments"
